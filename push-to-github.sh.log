@@ -1,0 +1,140 @@
+Starting upload of modified files to GitHub...
+Uploading src/components/SiteProtectionWrapper.tsx (URL encoded as: src%2Fcomponents%2FSiteProtectionWrapper.tsx)...
+Checking file existence at: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src%2Fcomponents%2FSiteProtectionWrapper.tsx
+File info response:
+{
+  "name": "SiteProtectionWrapper.tsx",
+  "path": "src/components/SiteProtectionWrapper.tsx",
+  "sha": "3b7ce210bbae6a065dc330657b662421fe9249d5",
+  "size": 1806,
+  "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/components/SiteProtectionWrapper.tsx?ref=main",
+  "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/components/SiteProtectionWrapper.tsx",
+  "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/3b7ce210bbae6a065dc330657b662421fe9249d5",
+  "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/components/SiteProtectionWrapper.tsx",
+  "type": "file",
+SHA found: 3b7ce210bbae6a065dc330657b662421fe9249d5
+Updating existing file with SHA: 3b7ce210bbae6a065dc330657b662421fe9249d5
+Sending API request to update/create file...
+API URL: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/components/SiteProtectionWrapper.tsx
+API Response:
+{
+  "content": {
+    "name": "SiteProtectionWrapper.tsx",
+    "path": "src/components/SiteProtectionWrapper.tsx",
+    "sha": "3b7ce210bbae6a065dc330657b662421fe9249d5",
+    "size": 1806,
+    "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/components/SiteProtectionWrapper.tsx?ref=main",
+    "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/components/SiteProtectionWrapper.tsx",
+    "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/3b7ce210bbae6a065dc330657b662421fe9249d5",
+    "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/components/SiteProtectionWrapper.tsx",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/components/SiteProtectionWrapper.tsx?ref=main",
+      "git": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/3b7ce210bbae6a065dc330657b662421fe9249d5",
+      "html": "https://github.com/jbishop216/littlegabriel2/blob/main/src/components/SiteProtectionWrapper.tsx"
+    }
+  },
+  "commit": {
+    "sha": "1ebd244be30bdc321051469621f04ddcbfebdc9c",
+    "node_id": "C_kwDOOXpcVtoAKDFlYmQyNDRiZTMwYmRjMzIxMDUxNDY5NjIxZjA0ZGRjYmZlYmRjOWM",
+✓ Successfully uploaded src/components/SiteProtectionWrapper.tsx
+Uploading src/context/PasswordContext.tsx (URL encoded as: src%2Fcontext%2FPasswordContext.tsx)...
+Checking file existence at: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src%2Fcontext%2FPasswordContext.tsx
+File info response:
+{
+  "name": "PasswordContext.tsx",
+  "path": "src/context/PasswordContext.tsx",
+  "sha": "735547ea70334833bdf912cfb2c07c6dad562dd6",
+  "size": 2059,
+  "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/context/PasswordContext.tsx?ref=main",
+  "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/context/PasswordContext.tsx",
+  "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/735547ea70334833bdf912cfb2c07c6dad562dd6",
+  "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/context/PasswordContext.tsx",
+  "type": "file",
+SHA found: 735547ea70334833bdf912cfb2c07c6dad562dd6
+Updating existing file with SHA: 735547ea70334833bdf912cfb2c07c6dad562dd6
+Sending API request to update/create file...
+API URL: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/context/PasswordContext.tsx
+API Response:
+{
+  "content": {
+    "name": "PasswordContext.tsx",
+    "path": "src/context/PasswordContext.tsx",
+    "sha": "735547ea70334833bdf912cfb2c07c6dad562dd6",
+    "size": 2059,
+    "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/context/PasswordContext.tsx?ref=main",
+    "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/context/PasswordContext.tsx",
+    "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/735547ea70334833bdf912cfb2c07c6dad562dd6",
+    "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/context/PasswordContext.tsx",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/context/PasswordContext.tsx?ref=main",
+      "git": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/735547ea70334833bdf912cfb2c07c6dad562dd6",
+      "html": "https://github.com/jbishop216/littlegabriel2/blob/main/src/context/PasswordContext.tsx"
+    }
+  },
+  "commit": {
+    "sha": "d75e6a977d17ef238cab7fdf1a1b775fb72aac5a",
+    "node_id": "C_kwDOOXpcVtoAKGQ3NWU2YTk3N2QxN2VmMjM4Y2FiN2ZkZjFhMWI3NzVmYjcyYWFjNWE",
+✓ Successfully uploaded src/context/PasswordContext.tsx
+Uploading src/app/layout.tsx (URL encoded as: src%2Fapp%2Flayout.tsx)...
+Checking file existence at: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src%2Fapp%2Flayout.tsx
+File info response:
+{
+  "name": "layout.tsx",
+  "path": "src/app/layout.tsx",
+  "sha": "7b7328845ecfc9d438613dd53a85864ce6ee13d0",
+  "size": 2554,
+  "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/layout.tsx?ref=main",
+  "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/app/layout.tsx",
+  "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/7b7328845ecfc9d438613dd53a85864ce6ee13d0",
+  "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/app/layout.tsx",
+  "type": "file",
+SHA found: 7b7328845ecfc9d438613dd53a85864ce6ee13d0
+Updating existing file with SHA: 7b7328845ecfc9d438613dd53a85864ce6ee13d0
+Sending API request to update/create file...
+API URL: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/layout.tsx
+API Response:
+{
+  "content": {
+    "name": "layout.tsx",
+    "path": "src/app/layout.tsx",
+    "sha": "7b7328845ecfc9d438613dd53a85864ce6ee13d0",
+    "size": 2554,
+    "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/layout.tsx?ref=main",
+    "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/app/layout.tsx",
+    "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/7b7328845ecfc9d438613dd53a85864ce6ee13d0",
+    "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/app/layout.tsx",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/layout.tsx?ref=main",
+      "git": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/7b7328845ecfc9d438613dd53a85864ce6ee13d0",
+      "html": "https://github.com/jbishop216/littlegabriel2/blob/main/src/app/layout.tsx"
+    }
+  },
+  "commit": {
+    "sha": "0c791680183d92fe77c69de5bee1a6a855a5f990",
+    "node_id": "C_kwDOOXpcVtoAKDBjNzkxNjgwMTgzZDkyZmU3N2M2OWRlNWJlZTFhNmE4NTVhNWY5OTA",
+✓ Successfully uploaded src/app/layout.tsx
+Uploading src/app/api/auth/[...nextauth]/route.ts (URL encoded as: src%2Fapp%2Fapi%2Fauth%2F%5B...nextauth%5D%2Froute.ts)...
+Checking file existence at: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src%2Fapp%2Fapi%2Fauth%2F%5B...nextauth%5D%2Froute.ts
+File info response:
+{
+  "name": "route.ts",
+  "path": "src/app/api/auth/[...nextauth]/route.ts",
+  "sha": "5011c59a74086d62b0d736baa212067f4f4a7e7d",
+  "size": 808,
+  "url": "https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/api/auth/[...nextauth]/route.ts?ref=main",
+  "html_url": "https://github.com/jbishop216/littlegabriel2/blob/main/src/app/api/auth/[...nextauth]/route.ts",
+  "git_url": "https://api.github.com/repos/jbishop216/littlegabriel2/git/blobs/5011c59a74086d62b0d736baa212067f4f4a7e7d",
+  "download_url": "https://raw.githubusercontent.com/jbishop216/littlegabriel2/main/src/app/api/auth/%5B...nextauth%5D/route.ts",
+  "type": "file",
+SHA found: 5011c59a74086d62b0d736baa212067f4f4a7e7d
+Updating existing file with SHA: 5011c59a74086d62b0d736baa212067f4f4a7e7d
+Sending API request to update/create file...
+API URL: https://api.github.com/repos/jbishop216/littlegabriel2/contents/src/app/api/auth/[...nextauth]/route.ts
+API Response:
+
+✗ Failed to upload src/app/api/auth/[...nextauth]/route.ts
+Error message:
+Upload process completed.

@@ -1,0 +1,216 @@
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ OPENAI_API_KEY: sk-...p4A
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ OPENAI_ASSISTANT_ID: asst_BpFiJmyhoHFYUj5ooLEoHEX2
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ BIBLE_API_KEY: 446...3a0
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ GOOGLE_OAUTH_CLIENT_ID: 1065036519072-if8khujndscqaelqljc0h8u9jhh84554.apps.googleusercontent.com
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ GOOGLE_OAUTH_CLIENT_SECRET: GOC...19s
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ DATABASE_URL: pos...ire
+2025-04-28 19:33:33.71
+fb665e0e
+User
+2025-04-28 19:33:33.71
+fb665e0e
+User
+🤖 OpenAI Configuration:
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ OPENAI_ASSISTANT_ID: asst_BpFiJmyhoHFYUj5ooLEoHEX2
+2025-04-28 19:33:33.71
+fb665e0e
+User
+2025-04-28 19:33:33.71
+fb665e0e
+User
+🏗️ Environment Status:
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ NODE_ENV: production
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ Critical environment variables are set
+2025-04-28 19:33:33.71
+fb665e0e
+User
+✅ Environment check completed for PRODUCTION mode
+2025-04-28 19:33:33.71
+fb665e0e
+User
+🤖 Testing OpenAI Assistant...
+2025-04-28 19:33:36.00
+fb665e0e
+User
+🔍 Checking OpenAI Assistant Configuration
+2025-04-28 19:33:36.00
+fb665e0e
+User
+=========================================
+2025-04-28 19:33:36.00
+fb665e0e
+User
+🔍 Using OpenAI Assistant ID: asst_BpFiJmyhoHFYUj5ooLEoHEX2
+2025-04-28 19:33:36.00
+fb665e0e
+User
+📡 Connecting to OpenAI API...
+2025-04-28 19:33:36.00
+fb665e0e
+User
+🤖 Retrieving assistant with ID: asst_BpFiJmyhoHFYUj5ooLEoHEX2
+2025-04-28 19:33:36.59
+fb665e0e
+User
+❌ Failed to retrieve assistant: 404 No assistant found with id 'asst_BpFiJmyhoHFYUj5ooLEoHEX2'.
+2025-04-28 19:33:36.59
+fb665e0e
+User
+❌ Assistant check failed. Application will not function correctly!
+2025-04-28 19:33:36.59
+fb665e0e
+User
+⚠️ WARNING: Assistant check failed, but continuing with deployment.
+2025-04-28 19:33:36.59
+fb665e0e
+User
+Please check your Assistant ID in the Replit Secrets.
+2025-04-28 19:33:36.59
+fb665e0e
+User
+2025-04-28 19:33:36.59
+fb665e0e
+User
+🏗️ Building application for production...
+2025-04-28 19:33:36.59
+fb665e0e
+User
+Running: OPENAI_ASSISTANT_ID=asst_BpFiJmyhoHFYUj5ooLEoHEX2 NODE_ENV=production npm run build
+2025-04-28 19:33:39.28
+fb665e0e
+User
+> workspace@1.0.0 prebuild
+2025-04-28 19:33:39.28
+fb665e0e
+User
+> node update-env-for-deploy.js
+2025-04-28 19:33:39.36
+fb665e0e
+User
+Updating environment variables for deployment...
+2025-04-28 19:33:39.36
+fb665e0e
+User
+✅ Added OPENAI_ASSISTANT_ID to .env.production
+2025-04-28 19:33:39.36
+fb665e0e
+User
+✅ Added OPENAI_API_KEY to .env.production
+2025-04-28 19:33:39.36
+fb665e0e
+User
+✅ Added BIBLE_API_KEY to .env.production
+2025-04-28 19:33:39.36
+fb665e0e
+User
+✅ Wrote /home/runner/workspace/.env.production
+2025-04-28 19:33:39.37
+fb665e0e
+User
+Environment update complete!
+2025-04-28 19:33:39.37
+fb665e0e
+User
+> workspace@1.0.0 build
+2025-04-28 19:33:39.37
+fb665e0e
+User
+> next build
+2025-04-28 19:33:45.16
+fb665e0e
+User
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-04-28 19:33:45.16
+fb665e0e
+User
+This information is used to shape Next.js' roadmap and prioritize features.
+2025-04-28 19:33:45.16
+fb665e0e
+User
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-04-28 19:33:45.16
+fb665e0e
+User
+https://nextjs.org/telemetry
+2025-04-28 19:33:45.31
+fb665e0e
+User
+▲ Next.js 15.2.4
+2025-04-28 19:33:45.31
+fb665e0e
+User
+- Environments: .env.local, .env.production, .env
+2025-04-28 19:33:45.31
+fb665e0e
+User
+- Experiments (use with caution):
+2025-04-28 19:33:45.31
+fb665e0e
+User
+· allowedDevOrigins
+2025-04-28 19:33:45.31
+fb665e0e
+User
+2025-04-28 19:33:46.52
+fb665e0e
+User
+Creating an optimized production build ...
+2025-04-28 19:34:25.03
+fb665e0e
+User
+[webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
+2025-04-28 19:34:25.40
+fb665e0e
+User
+[webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
+2025-04-28 19:34:25.45
+fb665e0e
+System
+a port configuration was specified but the required port was never opened
+2025-04-28 19:34:31.67
+fb665e0e
+System
+starting up user application
+2025-04-28 19:34:31.78
+fb665e0e
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-04-28 19:34:32.15
+fb665e0e
+System
+system: received signal terminated
+2025-04-28 19:34:32.15
+fb665e0e
+System
+command finished with error [sh -c NODE_ENV=production node check-environment.js && NODE_ENV=production sh run-production.sh]: signal: terminated
+2025-04-28 19:34:32.23
+fb665e0e
+System
+main done, exiting

@@ -1,0 +1,178 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+
+// Here's an inline SVG for a Christian-style cross
+function CrossIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="40"
+      height="40"
+      fill="none"
+      stroke="white"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Vertical line from (12,2) down to (12,18) */}
+      <path d="M12 2v16" />
+      {/* Horizontal line from (8,8) to (16,8) */}
+      <path d="M8 8h8" />
+    </svg>
+  );
+}
+
+export default function LittleGabrielLanding() {
+  return (
+    <div className="relative font-sans min-h-screen overflow-hidden">
+      {/* Swirling gradient background: blue -> gold -> blue */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-blue-500 via-yellow-300 to-blue-500 mix-blend-multiply z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.9 }}
+        transition={{ duration: 1 }}
+      />
+
+      {/* Floating crosses instead of circles */}
+      {[...Array(8)].map((_, index) => (
+        <motion.div
+          key={index}
+          className="absolute"
+          style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
+          animate={{ y: [0, -30, 0], x: [0, 20, 0], rotate: [0, 30, 0] }}
+          transition={{ repeat: Infinity, duration: 6 + index, repeatType: 'reverse' }}
+        >
+          <CrossIcon className="w-10 h-10 opacity-80" />
+        </motion.div>
+      ))}
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-12">
+        {/* Hero Section */}
+        <header className="text-center mb-12">
+          <motion.h1
+            className="text-6xl font-extrabold text-white drop-shadow-md mb-4 leading-tight"
+            initial={{ scale: 0.8, y: -50, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            LittleGabriel
+          </motion.h1>
+          <motion.p
+            className="text-2xl text-yellow-50 font-semibold"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1 }}
+          >
+            A Colorful Adventure for Inspiring Faith & Playful Guidance
+          </motion.p>
+        </header>
+
+        {/* Feature Cards */}
+        <section className="grid md:grid-cols-3 gap-8 mb-16">
+          {[
+            {
+              icon: (
+                <svg
+                  width="48"
+                  height="48"
+                  fill="none"
+                  stroke="#3490dc" /* bright blue */
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="drop-shadow"
+                >
+                  {/* Book Open icon from Lucide, but manually inserted if needed */}
+                  <path d="M2 4h6a2 2 0 0 1 2 2v14H2z"></path>
+                  <path d="M22 4h-6a2 2 0 0 0-2 2v14h8z"></path>
+                </svg>
+              ),
+              title: 'Colorful Wisdom',
+              description:
+                'Bright, uplifting insights with a joyful swirl of Scriptural cheer!'
+            },
+            {
+              icon: (
+                <svg
+                  width="48"
+                  height="48"
+                  fill="none"
+                  stroke="#ec4899" /* bright pink */
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="drop-shadow"
+                >
+                  {/* MessageCircle icon from Lucide */}
+                  <path d="M21 11.5a8.38 8.38 0 0 1-9 8.4 8.5 8.5 0 0 1-5-.8L2 20l1.27-3.8a8.5 8.5 0 0 1-.77-3.7 8.38 8.38 0 0 1 9-8.4 8.5 8.5 0 0 1 8.5 8.5z"></path>
+                </svg>
+              ),
+              title: 'Playful Chats',
+              description: 'Engaging conversations that spark positivity and fun!'
+            },
+            {
+              icon: (
+                <svg
+                  width="48"
+                  height="48"
+                  fill="none"
+                  stroke="#f59e0b" /* bright yellow */
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="drop-shadow"
+                >
+                  {/* HeartHandshake icon from Lucide (approx) */}
+                  <path d="M12 20.88l-3.76-3.47a5.13 5.13 0 0 0-6.65-.25 4.42 4.42 0 0 0 0 6.3l10.41 9.61a2.46 2.46 0 0 0 3.28 0l10.41-9.61a4.42 4.42 0 0 0 0-6.3 5.13 5.13 0 0 0-6.65.25L12 20.88z"></path>
+                </svg>
+              ),
+              title: 'Heartfelt Support',
+              description: 'Kind and empathetic interactions to brighten your day!'
+            }
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+            >
+              <Card className="bg-white bg-opacity-90 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden">
+                <CardContent className="p-8 text-center flex flex-col items-center">
+                  {item.icon}
+                  <h2 className="mt-4 mb-2 text-2xl font-bold text-blue-900">
+                    {item.title}
+                  </h2>
+                  <p className="text-gray-700 font-medium">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </section>
+
+        {/* Call to Action */}
+        <motion.section
+          className="relative text-center rounded-3xl p-8 bg-white/70 shadow-2xl"
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl font-extrabold text-blue-900 drop-shadow-lg mb-4">
+            Ready to Embark on a Fun-Filled Faith Journey?
+          </h2>
+          <p className="text-blue-900 text-lg font-semibold mb-6">
+            Let LittleGabriel brighten your day with colorful inspiration!
+          </p>
+          <Button className="bg-yellow-400 text-blue-900 hover:bg-yellow-300 font-bold px-8 py-4 rounded-full shadow-lg transform hover:-translate-y-1 transition-all">
+            Let's Go 🎉
+          </Button>
+        </motion.section>
+      </div>
+    </div>
+  );
+}

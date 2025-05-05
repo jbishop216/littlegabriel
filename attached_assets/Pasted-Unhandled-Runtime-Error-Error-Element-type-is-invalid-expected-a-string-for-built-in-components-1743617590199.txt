@@ -1,0 +1,53 @@
+Unhandled Runtime Error
+
+
+Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `ChatPage`.
+
+src/app/chat/page.tsx (45:7) @ ChatPage
+
+
+  43 |     <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+  44 |       {/* Swirling gradient background: blue -> pink */}
+> 45 |       <motion.div
+     |       ^
+  46 |         className="absolute inset-0 bg-gradient-to-r from-blue-500 via-pink-300 to-blue-500 mix-blend-multiply z-0"
+  47 |         initial={{ opacity: 0 }}
+  48 |         animate={{ opacity: 0.9 }}
+Call Stack
+16
+
+Hide 15 ignore-listed frame(s)
+createFiberFromTypeAndProps
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (13158:1)
+createFiberFromElement
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (13172:1)
+createChild
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (6846:1)
+reconcileChildrenArray
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (7178:1)
+reconcileChildFibersImpl
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (7501:1)
+eval
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (7606:1)
+reconcileChildren
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (8047:1)
+beginWork
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (10215:1)
+runWithFiberInDEV
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (1510:1)
+performUnitOfWork
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (15119:1)
+workLoopSync
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (14943:39)
+renderRootSync
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (14923:1)
+performWorkOnRoot
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (14453:1)
+performWorkOnRootViaSchedulerTask
+node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (16274:1)
+MessagePort.performWorkUntilDeadline
+node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js (45:1)
+ChatPage
+src/app/chat/page.tsx (45:7)

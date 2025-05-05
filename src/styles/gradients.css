@@ -1,0 +1,42 @@
+:root {
+  /* Common gold center for all pages */
+  --via-yellow-300-color: #fde047;
+  
+  /* Default/Home page - Blue → Gold → Blue */
+  --from-blue-500-color: #3b82f6;
+  --to-blue-500-color: #3b82f6;
+  
+  /* Chat page - Teal → Gold → Teal */
+  --from-teal-500-color: #14b8a6;
+  --to-teal-500-color: #14b8a6;
+  
+  /* Bible Reader page - Green → Gold → Green */
+  --from-green-600-color: #16a34a;
+  --to-green-600-color: #16a34a;
+  
+  /* Prayer Requests page - Cyan → Gold → Cyan */
+  --from-cyan-500-color: #06b6d4;
+  --to-cyan-500-color: #06b6d4;
+  
+  /* Sermon Generator page - Indigo → Gold → Indigo */
+  --from-indigo-500-color: #6366f1;
+  --to-indigo-500-color: #6366f1;
+  
+  /* Admin page - Slate → Gold → Slate */
+  --from-slate-600-color: #475569;
+  --to-slate-600-color: #475569;
+  
+  /* Default page gradient variables - used by PageBackground.tsx */
+  --from-color: var(--from-blue-500-color);
+  --via-color: var(--via-yellow-300-color);
+  --to-color: var(--to-blue-500-color);
+}
+
+/* Set the default gradient on the HTML element */
+html {
+  background: linear-gradient(to right, 
+    var(--from-color), 
+    var(--via-color), 
+    var(--to-color)
+  ) no-repeat fixed;
+}

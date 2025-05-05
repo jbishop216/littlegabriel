@@ -1,0 +1,14 @@
+ChunkLoadError: Loading chunk app/layout failed.
+(timeout: https://5713eb1a-789f-49ad-8c79-e19d81a2f376-00-1eo0dsno2p4pv.riker.replit.dev/_next/static/chunks/app/layout.js)
+    at __webpack_require__.f.j (https://5713eb1a-789f-49ad-8c79-e19d81a2f376-00-1eo0dsno2p4pv.riker.replit.dev/_next/static/chunks/webpack.js?v=1744657855039:858:29)
+    at https://5713eb1a-789f-49ad-8c79-e19d81a2f376-00-1eo0dsno2p4pv.riker.replit.dev/_next/static/chunks/webpack.js?v=1744657855039:153:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (https://5713eb1a-789f-49ad-8c79-e19d81a2f376-00-1eo0dsno2p4pv.riker.replit.dev/_next/static/chunks/webpack.js?v=1744657855039:152:67)
+    at fn.e (https://5713eb1a-789f-49ad-8c79-e19d81a2f376-00-1eo0dsno2p4pv.riker.replit.dev/_next/static/chunks/webpack.js?v=1744657855039:389:50)
+    at loadChunk (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:126:34)
+    at preloadModule (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:93:31)
+    at resolveModule (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:1607:20)
+    at processFullStringRow (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2218:11)
+    at processFullBinaryRow (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2213:7)
+    at progress (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:2459:17)
+    at RootLayout (rsc://React/Server/webpack-internal:///(rsc)/./src/app/layout.tsx?0:26:98)
