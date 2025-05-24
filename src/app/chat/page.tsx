@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import ChatClient from './chat-client';
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Chat with Gabriel',

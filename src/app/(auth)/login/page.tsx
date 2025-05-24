@@ -26,6 +26,7 @@ function LoginForm() {
   // Check if user is already logged in
   useEffect(() => {
     if (session && status === 'authenticated') {
+      // User is authenticated, redirect to callback URL
       router.push(callbackUrl);
     }
   }, [session, status, callbackUrl, router]);
@@ -42,25 +43,57 @@ function LoginForm() {
     setLoading(true);
 
     try {
+      // Attempt to sign in with credentials
+      // Force callbackUrl to use localhost instead of Replit URL
+      const localCallbackUrl = typeof window !== 'undefined' 
+        ? `${window.location.origin}/` 
+        : 'http://localhost:3000/';
+        
+
       const res = await signIn('credentials', {
         redirect: false,
         email: formData.email,
         password: formData.password,
-        callbackUrl,
+        callbackUrl: localCallbackUrl,
       });
 
+
+
       if (res?.error) {
-        setError('Invalid email or password. Please check your credentials and try again.');
-        setLoginStatus('Login failed');
+        setError(res.error);
       } else if (res?.url) {
         setLoginStatus('Login successful, redirecting...');
-        router.push(callbackUrl);
+        
+        // Store authentication in localStorage as backup
+        try {
+          localStorage.setItem('gabriel-site-auth', 'true');
+        } catch (e) {
+          console.error('Failed to set localStorage item', e);
+        }
+        
+        // Force a page reload instead of using router.push to ensure cookie is properly set
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
+        console.warn('Login partially successful but no redirect URL received', res);
         setLoginStatus('Login successful but no redirect URL received');
-        router.push(callbackUrl);
+        
+        // Store authentication in localStorage as backup
+        try {
+          localStorage.setItem('gabriel-site-auth', 'true');
+        } catch (e) {
+          console.error('Failed to set localStorage item', e);
+        }
+        
+        // Force a page reload instead of using router.push
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       }
     } catch (error) {
-      setError('An unexpected error occurred during login. Please try again.');
+      console.error('Unexpected login error:', error);
+      setError(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }

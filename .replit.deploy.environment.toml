@@ -1,8 +1,0 @@
-# This file configures environment variables for Replit deployments
-# It specifically addresses the issue where secrets don't automatically
-# transfer to the deployed environment
-
-OPENAI_ASSISTANT_ID = "${OPENAI_ASSISTANT_ID}"
-OPENAI_API_KEY = "${OPENAI_API_KEY}"
-BIBLE_API_KEY = "${BIBLE_API_KEY}"
-NODE_ENV = "production"

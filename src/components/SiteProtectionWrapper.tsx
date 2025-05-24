@@ -2,10 +2,12 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { usePasswordContext } from '@/context/PasswordContext';
+import { useSession } from 'next-auth/react';
 import PasswordProtection from './PasswordProtection';
 
 export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
   const { isAuthenticated } = usePasswordContext();
+  const { data: session } = useSession();
   const [isSiteProtected, setIsSiteProtected] = useState(false); // Start with false to prevent flash
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -19,9 +21,30 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
     // Check if site protection is enabled
     const checkSiteProtection = async () => {
       try {
-        const res = await fetch('/api/settings');
-        const data = await res.json();
-        setIsSiteProtected(data.siteProtected ?? true);
+        // First check if site protection is disabled by environment variable
+        // This is useful for development environments
+        const devSettings = { siteProtected: true };
+        
+        try {
+          // Check for the NEXT_PUBLIC_ environment variable (accessible in client)
+          // This will be available if we've set it in next.config.js
+          if (typeof process !== 'undefined' && 
+              process.env.NEXT_PUBLIC_SITE_PASSWORD_PROTECTION === 'false') {
+            console.log('Site protection disabled by environment variable');
+            devSettings.siteProtected = false;
+          }
+        } catch (e) {
+          console.log('Could not access env vars from client:', e);
+        }
+        
+        // If not explicitly disabled, check API for setting
+        if (devSettings.siteProtected) {
+          const res = await fetch('/api/settings');
+          const data = await res.json();
+          setIsSiteProtected(data.siteProtected ?? true);
+        } else {
+          setIsSiteProtected(false);
+        }
       } catch (error) {
         console.error('Failed to fetch site protection settings:', error);
         // Default to protected if we can't fetch the setting
@@ -35,6 +58,17 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
       checkSiteProtection();
     }
   }, [mounted]);
+
+  // For debugging
+  useEffect(() => {
+    if (mounted) {
+      console.log('Site protection status:', { 
+        isAuthenticated,
+        hasNextAuthSession: !!session,
+        isSiteProtected
+      });
+    }
+  }, [mounted, isAuthenticated, session, isSiteProtected]);
 
   // Always render children on the server to avoid hydration mismatch
   if (typeof window === 'undefined') {
@@ -50,8 +84,10 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
     );
   }
 
-  // If the site is protected and the user is not authenticated
-  if (isSiteProtected && !isAuthenticated) {
+  // Allow access if either:
+  // 1. User is authenticated through site-wide password OR
+  // 2. User is logged in with NextAuth
+  if (isSiteProtected && !isAuthenticated && !session) {
     return <PasswordProtection />;
   }
 

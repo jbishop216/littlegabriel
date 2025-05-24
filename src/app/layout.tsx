@@ -20,6 +20,7 @@ export default function RootLayout({
       <head>
         {/* Basic error handling for chunk loading failures */}
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               window.addEventListener('error', function(event) {
