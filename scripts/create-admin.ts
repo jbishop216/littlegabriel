@@ -1,11 +1,23 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = 'jbishop216@gmail.com';
-  const adminPassword = 'g@mecok3';
+  // Use environment variable or prompt for password if not set
+  const adminEmail = process.env.ADMIN_EMAIL || 'jbishop216@gmail.com';
+  // Never hardcode passwords in code
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  
+  if (!adminPassword) {
+    console.error('Error: ADMIN_PASSWORD environment variable is not set');
+    console.log('Please set an ADMIN_PASSWORD environment variable before running this script');
+    process.exit(1);
+  }
   
   try {
     // Check if admin already exists
