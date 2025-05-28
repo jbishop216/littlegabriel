@@ -9,56 +9,25 @@ import BackgroundDecorator from '@/components/BackgroundDecorator';
 import { useTheme } from '@/context/ThemeContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 
 export default function ChatClient({ session }: { session: Session }) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const router = useRouter();
-  const [directAuthUser, setDirectAuthUser] = useState<{email: string} | null>(null);
   
-  // Check for direct authentication on client side
+  // Use our global authentication hook
+  const { user, isAuthenticated, isLoading } = useGlobalAuth();
+  
+  // Check authentication and redirect if needed
   useEffect(() => {
-    // If we already have a session from NextAuth with a real email, no need to check for direct auth
-    if (session?.user?.email && session.user.email !== 'authenticated-user@direct-auth') {
-      console.log('Using NextAuth session:', session.user.email);
-      return;
+    if (!isLoading && !isAuthenticated) {
+      console.log('ChatClient: Not authenticated, redirecting to login');
+      router.push('/login?callbackUrl=/chat');
+    } else if (isAuthenticated) {
+      console.log('ChatClient: Authenticated as:', user?.email || 'unknown user');
     }
-    
-    try {
-      // Check for direct auth in localStorage
-      const authUserStr = localStorage.getItem('gabriel-auth-user');
-      const hasAuthCookie = document.cookie.includes('gabriel-auth-token=');
-      const hasSiteAuthCookie = document.cookie.includes('gabriel-site-auth=true');
-      
-      console.log('Auth check:', { 
-        hasAuthUserInStorage: !!authUserStr,
-        hasAuthCookie,
-        hasSiteAuthCookie,
-        sessionEmail: session?.user?.email
-      });
-      
-      if (authUserStr) {
-        const authUser = JSON.parse(authUserStr);
-        if (authUser && authUser.email) {
-          console.log('Using direct auth user:', authUser.email);
-          setDirectAuthUser(authUser);
-          return;
-        }
-      }
-      
-      // If we get here and don't have any authentication, redirect to login
-      if (!session?.user && !hasAuthCookie && !hasSiteAuthCookie) {
-        console.log('No authentication found, redirecting to login');
-        router.push('/login?callbackUrl=/chat');
-      }
-    } catch (error) {
-      console.error('Error checking direct auth:', error);
-      // If there's an error and no session, redirect to login
-      if (!session?.user) {
-        router.push('/login?callbackUrl=/chat');
-      }
-    }
-  }, [session, router]);
+  }, [isAuthenticated, isLoading, router, user]);
   
   // Explicitly apply the gradient based on theme - always use gold in the center
   const backgroundClass = isDarkMode 
@@ -102,7 +71,7 @@ export default function ChatClient({ session }: { session: Session }) {
                 </div>
               </div>
               
-              {(session?.user || directAuthUser) && (
+              {user && (
                 <motion.div 
                   className="hidden items-center space-x-2 text-sm text-white md:flex bg-white bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-full"
                   initial={{ x: 20, opacity: 0 }}
@@ -115,7 +84,7 @@ export default function ChatClient({ session }: { session: Session }) {
                   </span>
                   <span>
                     Connected as: <span className="font-medium">
-                      {directAuthUser ? directAuthUser.email : session.user.email}
+                      {user.email || 'authenticated user'}
                     </span>
                   </span>
                 </motion.div>
