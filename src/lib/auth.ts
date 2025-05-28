@@ -36,6 +36,19 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  // Configure cookie settings for better cross-environment compatibility
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.VERCEL ? '.vercel.app' : undefined, // Handle Vercel domain
+      },
+    },
+  },
   debug: process.env.NODE_ENV === 'development',
   pages: {
     signIn: "/login",

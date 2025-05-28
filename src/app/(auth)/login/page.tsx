@@ -67,14 +67,19 @@ function LoginForm() {
         // Store authentication in localStorage as backup
         try {
           localStorage.setItem('gabriel-site-auth', 'true');
+          // Store timestamp to check session freshness
+          localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
         } catch (e) {
           console.error('Failed to set localStorage item', e);
         }
         
         // Force a page reload instead of using router.push to ensure cookie is properly set
+        // Use a longer timeout to ensure the session is properly established
         setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+          // Use absolute URL with protocol to ensure cookies are properly set
+          const baseUrl = window.location.origin;
+          window.location.href = `${baseUrl}/`;
+        }, 1500);
       } else {
         console.warn('Login partially successful but no redirect URL received', res);
         setLoginStatus('Login successful but no redirect URL received');
@@ -82,14 +87,19 @@ function LoginForm() {
         // Store authentication in localStorage as backup
         try {
           localStorage.setItem('gabriel-site-auth', 'true');
+          // Store timestamp to check session freshness
+          localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
         } catch (e) {
           console.error('Failed to set localStorage item', e);
         }
         
         // Force a page reload instead of using router.push
+        // Use a longer timeout to ensure the session is properly established
         setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+          // Use absolute URL with protocol to ensure cookies are properly set
+          const baseUrl = window.location.origin;
+          window.location.href = `${baseUrl}/`;
+        }, 1500);
       }
     } catch (error) {
       console.error('Unexpected login error:', error);
