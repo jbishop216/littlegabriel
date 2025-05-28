@@ -137,6 +137,16 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
       // Update messages with the user's message
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       
+      // Add a loading indicator message
+      const loadingMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '...'
+      };
+      
+      // Show the loading indicator
+      setMessages(prevMessages => [...prevMessages, loadingMessage]);
+      
       // Clear the input early for better UX
       setUserInput('');
       
@@ -203,18 +213,30 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
           throw new Error('Empty response received from API');
         }
         
-        // Add the assistant's response to the messages
+        // Replace the loading indicator with the actual response
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: assistantResponseText
         };
         
-        setMessages(prevMessages => [...prevMessages, assistantMessage]);
+        // Remove the loading indicator and add the real response
+        setMessages(prevMessages => {
+          // Filter out the loading indicator message
+          const messagesWithoutLoading = prevMessages.filter(msg => msg.content !== '...');
+          return [...messagesWithoutLoading, assistantMessage];
+        });
         setError(null);
       } catch (apiError: any) {
         console.error('Error calling Bible chat API:', apiError);
-        setError('Failed to get response from Bible study assistant. Please try again.');
+        
+        // Remove the loading indicator
+        setMessages(prevMessages => {
+          return prevMessages.filter(msg => msg.content !== '...');
+        });
+        
+        setError(`Error: ${apiError.message || 'Unknown error'}`);
+        setIsProcessing(false);
       }
       
       // Clear the processing state

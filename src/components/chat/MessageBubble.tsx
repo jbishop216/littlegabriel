@@ -90,7 +90,7 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={compact ? 'text-xs leading-relaxed' : 'text-[15px] leading-relaxed'}>
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed ${isUser ? 'text-right' : ''}`}>
           {/* Special handling for the typing indicator ("...") */}
           {message === "..." ? (
             <div className="flex items-center space-x-2 py-1">

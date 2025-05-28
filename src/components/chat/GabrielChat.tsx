@@ -59,6 +59,16 @@ export default function GabrielChat() {
       // Update messages with the user's message
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       
+      // Add a loading indicator message
+      const loadingMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '...'
+      };
+      
+      // Show the loading indicator
+      setMessages(prevMessages => [...prevMessages, loadingMessage]);
+      
       // Send the message to the API
       try {
         console.log('Attempting to send message to primary API');
@@ -149,16 +159,27 @@ export default function GabrielChat() {
           throw new Error('Empty response received from API' + (usedFallback ? ' (fallback)' : ''));
         }
         
-        // Add the assistant's message to the messages state
+        // Replace the loading indicator with the actual response
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: assistantResponseText,
         };
         
-        setMessages(prevMessages => [...prevMessages, assistantMessage]);
+        // Remove the loading indicator and add the real response
+        setMessages(prevMessages => {
+          // Filter out the loading indicator message
+          const messagesWithoutLoading = prevMessages.filter(msg => msg.content !== '...');
+          return [...messagesWithoutLoading, assistantMessage];
+        });
       } catch (error) {
         console.error('Error calling API:', error);
+        
+        // Remove the loading indicator
+        setMessages(prevMessages => {
+          return prevMessages.filter(msg => msg.content !== '...');
+        });
+        
         // You might want to display an error message to the user here
       }
       
