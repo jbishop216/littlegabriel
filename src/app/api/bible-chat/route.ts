@@ -7,8 +7,9 @@ import OpenAI from 'openai';
 // Bible Chat Assistant ID - using the same Gabriel assistant 
 // This assistant has been properly configured in OpenAI dashboard
 // Make sure we're using the latest GPT-4o assistant ID
-const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID || ENV.OPENAI_ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
-console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID);
+// We're explicitly using the hardcoded ID to ensure consistency
+const ASSISTANT_ID = 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
+console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID, '(hardcoded for reliability)');
 
 // Force using the assistant API for Bible chat
 const USE_FALLBACK = false; // Override the fallback check to always use the assistant
@@ -84,6 +85,20 @@ export async function POST(request: NextRequest) {
     
     // Using the Assistant API approach
     try {
+      console.log('Bible Chat API: Attempting to use Assistant API with ID:', ASSISTANT_ID);
+      
+      // First check if the assistant exists
+      try {
+        // This will throw an error if the assistant doesn't exist or the API key doesn't have permission
+        const assistantCheck = await openai.beta.assistants.retrieve(ASSISTANT_ID);
+        console.log('Bible Chat API: Successfully retrieved assistant:', assistantCheck.id);
+      } catch (error: any) {
+        console.error('Bible Chat API: Failed to retrieve assistant:', error);
+        // If we can't retrieve the assistant, use the fallback API
+        const errorMessage = error?.message || 'Unknown error accessing assistant';
+        throw new Error(`Cannot access assistant: ${errorMessage}. Please check your API key permissions for Assistants.`);
+      }
+      
       // Create a thread for this Bible chat conversation
       const thread = await openai.beta.threads.create();
       console.log('Bible chat thread created:', thread.id);
@@ -174,9 +189,30 @@ export async function POST(request: NextRequest) {
       console.error('OpenAI API details:', error.response.data);
     }
     
+    // If the error is related to API permissions, provide a more helpful message
+    const errorMessage = error?.message || '';
+    if (errorMessage.includes('API key') || errorMessage.includes('permission') || errorMessage.includes('Cannot access assistant')) {
+      console.log('Bible Chat API: Detected API key permission issue');
+      console.error('API Key permission error details:', {
+        error: errorMessage,
+        assistantId: ASSISTANT_ID
+      });
+      
+      // Return a helpful error message for API key permission issues
+      return NextResponse.json({
+        error: 'OpenAI API key permission issue detected',
+        message: 'Your API key needs permissions for Assistants and Threads. Please check your OpenAI dashboard.',
+        details: errorMessage
+      }, { status: 403 });
+    }
+    
     // Return a JSON error response instead of a streaming response when there's an error
     return NextResponse.json(
-      { error: 'An error occurred while processing your Bible study request.' },
+      { 
+        error: 'An error occurred while processing your Bible study request.',
+        details: error?.message || 'Unknown error',
+        apiKeyIssue: errorMessage.includes('API key') || errorMessage.includes('permission')
+      },
       { status: 500 }
     );
   }
