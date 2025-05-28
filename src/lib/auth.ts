@@ -24,28 +24,21 @@ if (process.env.NODE_ENV === "development" && (!nextAuthUrl || nextAuthUrl !== "
 export const authOptions: NextAuthOptions = {
   // We're using JWT for credentials provider, so we don't need the adapter
   // adapter: PrismaAdapter(prisma),
-  secret: (() => {
-    const secretValue = process.env.NEXTAUTH_SECRET;
-    if (!secretValue) {
-      const errorMessage = "FATAL: NEXTAUTH_SECRET is not defined in environment variables! Authentication will not work. Please set it in your .env file.";
-      throw new Error(errorMessage);
-    }
-    return secretValue;
-  })(),
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  // Configure cookie settings for better cross-environment compatibility
+  // Configure cookie settings specifically for Vercel deployment
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: process.env.NODE_ENV === 'production' ? '__Host-next-auth.session-token' : 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.VERCEL ? '.vercel.app' : undefined, // Handle Vercel domain
+        // Don't set domain in production - let the browser handle it
       },
     },
   },

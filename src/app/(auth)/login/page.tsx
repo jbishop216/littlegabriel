@@ -70,45 +70,55 @@ function LoginForm() {
 
       if (res?.error) {
         setError(res.error);
-      } else if (res?.url) {
+      } else {
+        // Always consider it successful if there's no error
         setLoginStatus('Login successful, redirecting...');
         
         // Store authentication in localStorage as backup
         try {
           localStorage.setItem('gabriel-site-auth', 'true');
-          // Store timestamp to check session freshness
           localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+          localStorage.setItem('gabriel-auth-email', formData.email);
+          
+          // Store the credentials in sessionStorage for Vercel deployment
+          // This is a temporary solution until we fix the cookie issues
+          sessionStorage.setItem('gabriel-auth-credentials', JSON.stringify({
+            email: formData.email,
+            timestamp: Date.now()
+          }));
         } catch (e) {
-          console.error('Failed to set localStorage item', e);
+          console.error('Failed to set storage items', e);
         }
         
-        // Force a page reload instead of using router.push to ensure cookie is properly set
-        // Use a longer timeout to ensure the session is properly established
-        setTimeout(() => {
-          // Use absolute URL with protocol to ensure cookies are properly set
-          const baseUrl = window.location.origin;
-          window.location.href = `${baseUrl}/`;
-        }, 1500);
-      } else {
-        console.warn('Login partially successful but no redirect URL received', res);
-        setLoginStatus('Login successful but no redirect URL received');
+        // Create a direct form submission to our session bridge API to ensure cookies are properly set
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/api/auth/session-bridge';
         
-        // Store authentication in localStorage as backup
-        try {
-          localStorage.setItem('gabriel-site-auth', 'true');
-          // Store timestamp to check session freshness
-          localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
-        } catch (e) {
-          console.error('Failed to set localStorage item', e);
-        }
+        // Add hidden fields for authentication
+        const emailField = document.createElement('input');
+        emailField.type = 'hidden';
+        emailField.name = 'email';
+        emailField.value = formData.email;
+        form.appendChild(emailField);
         
-        // Force a page reload instead of using router.push
-        // Use a longer timeout to ensure the session is properly established
+        const authField = document.createElement('input');
+        authField.type = 'hidden';
+        authField.name = 'authenticated';
+        authField.value = 'true';
+        form.appendChild(authField);
+        
+        // Add the form to the document and submit it
+        document.body.appendChild(form);
+        
         setTimeout(() => {
-          // Use absolute URL with protocol to ensure cookies are properly set
-          const baseUrl = window.location.origin;
-          window.location.href = `${baseUrl}/`;
-        }, 1500);
+          try {
+            form.submit();
+          } catch (e) {
+            console.error('Form submission failed, falling back to redirect', e);
+            window.location.href = '/';
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error('Unexpected login error:', error);

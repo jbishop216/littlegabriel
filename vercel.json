@@ -6,7 +6,9 @@
   "env": {
     "NEXTAUTH_URL": "${VERCEL_URL}",
     "NEXT_PUBLIC_DEPLOYMENT_MODE": "production",
-    "NEXT_DISABLE_PARALLEL_ROUTE_PRERENDERING": "1"
+    "NEXT_DISABLE_PARALLEL_ROUTE_PRERENDERING": "1",
+    "VERCEL": "1",
+    "VERCEL_ENV": "production"
   },
   "headers": [
     {
