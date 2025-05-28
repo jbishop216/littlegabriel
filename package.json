@@ -9,7 +9,8 @@
     "lint": "next lint",
     "build:prod": "NODE_ENV=production prisma generate && next build",
     "start:prod": "NODE_ENV=production next start",
-    "postinstall": "node prisma/ensure-postgres.js"
+    "postinstall": "node prisma/ensure-postgres.js",
+    "test:db": "node scripts/test-db-connection.js"
   },
   "keywords": [],
   "author": "",
