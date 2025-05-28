@@ -27,13 +27,45 @@ type MessageForAPI = {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      console.log('Chat Fallback API: Unauthorized - No session found');
-      return new Response('Unauthorized', { status: 401 });
+    
+    // Parse the request body to check for direct authentication
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('Chat Fallback API: Failed to parse request body', parseError);
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
     }
-
-    console.log('Chat Fallback API: Authenticated as user:', session.user.email);
+    
+    // Check for direct authentication info in the request
+    const authInfo = requestBody.auth;
+    const cookies = req.cookies;
+    const hasDirectAuthCookie = cookies.has('gabriel-auth-token');
+    const hasSiteAuthCookie = cookies.has('gabriel-site-auth');
+    
+    // Initialize user information
+    let userId = session?.user?.id || 'direct-auth-user';
+    let userEmail = session?.user?.email || authInfo?.email || 'direct-auth-user@example.com';
+    
+    console.log('Chat Fallback API: Auth check', { 
+      hasSession: !!session?.user,
+      hasDirectAuthCookie,
+      hasSiteAuthCookie,
+      authInfoProvided: !!authInfo,
+      userEmail
+    });
+    
+    // If no NextAuth session, check for direct auth
+    if (!session?.user) {
+      if (hasDirectAuthCookie || hasSiteAuthCookie || authInfo?.hasDirectAuth) {
+        console.log('Chat Fallback API: Using direct authentication', { userEmail });
+      } else {
+        console.log('Chat Fallback API: Unauthorized - No authentication found');
+        return new Response('Unauthorized', { status: 401 });
+      }
+    } else {
+      console.log('Chat Fallback API: Authenticated with NextAuth as user:', session.user.email);
+    }
     
     let requestBody;
     try {

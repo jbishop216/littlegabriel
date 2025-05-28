@@ -64,11 +64,18 @@ export default function GabrielChat() {
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'same-origin', // Important for authentication cookies
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
+              auth: {
+                // Include authentication info in the request
+                email: localStorage.getItem('gabriel-auth-email') || '',
+                timestamp: localStorage.getItem('gabriel-auth-timestamp') || '',
+                hasDirectAuth: !!localStorage.getItem('gabriel-auth-user')
+              }
             }),
           });
           
@@ -95,11 +102,18 @@ export default function GabrielChat() {
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'same-origin', // Important for authentication cookies
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
+              auth: {
+                // Include authentication info in the request
+                email: localStorage.getItem('gabriel-auth-email') || '',
+                timestamp: localStorage.getItem('gabriel-auth-timestamp') || '',
+                hasDirectAuth: !!localStorage.getItem('gabriel-auth-user')
+              }
             }),
           });
           

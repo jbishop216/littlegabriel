@@ -18,24 +18,37 @@ export default function ChatClient({ session }: { session: Session }) {
   
   // Check for direct authentication on client side
   useEffect(() => {
-    // If we already have a session from NextAuth, no need to check for direct auth
+    // If we already have a session from NextAuth with a real email, no need to check for direct auth
     if (session?.user?.email && session.user.email !== 'authenticated-user@direct-auth') {
+      console.log('Using NextAuth session:', session.user.email);
       return;
     }
     
     try {
       // Check for direct auth in localStorage
       const authUserStr = localStorage.getItem('gabriel-auth-user');
+      const hasAuthCookie = document.cookie.includes('gabriel-auth-token=');
+      const hasSiteAuthCookie = document.cookie.includes('gabriel-site-auth=true');
+      
+      console.log('Auth check:', { 
+        hasAuthUserInStorage: !!authUserStr,
+        hasAuthCookie,
+        hasSiteAuthCookie,
+        sessionEmail: session?.user?.email
+      });
+      
       if (authUserStr) {
         const authUser = JSON.parse(authUserStr);
         if (authUser && authUser.email) {
+          console.log('Using direct auth user:', authUser.email);
           setDirectAuthUser(authUser);
           return;
         }
       }
       
-      // If we get here and don't have a NextAuth session, redirect to login
-      if (!session?.user) {
+      // If we get here and don't have any authentication, redirect to login
+      if (!session?.user && !hasAuthCookie && !hasSiteAuthCookie) {
+        console.log('No authentication found, redirecting to login');
         router.push('/login?callbackUrl=/chat');
       }
     } catch (error) {

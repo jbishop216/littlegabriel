@@ -56,20 +56,44 @@ export async function POST(req: NextRequest) {
       
     // Otherwise continue with the normal Assistant-based implementation
     const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      console.log('Chat API: Unauthorized - No session found');
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    console.log('Chat API: Authenticated as user:', session.user.email);
     
+    // Parse the request body to check for direct authentication
     let requestBody;
     try {
       requestBody = await req.json();
     } catch (parseError) {
       console.error('Chat API: Failed to parse request body', parseError);
       return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
+    }
+    
+    // Check for direct authentication info in the request
+    const authInfo = requestBody.auth;
+    const cookies = req.cookies;
+    const hasDirectAuthCookie = cookies.has('gabriel-auth-token');
+    const hasSiteAuthCookie = cookies.has('gabriel-site-auth');
+    
+    // Initialize user information
+    let userId = session?.user?.id || 'direct-auth-user';
+    let userEmail = session?.user?.email || authInfo?.email || 'direct-auth-user@example.com';
+    
+    console.log('Chat API: Auth check', { 
+      hasSession: !!session?.user,
+      hasDirectAuthCookie,
+      hasSiteAuthCookie,
+      authInfoProvided: !!authInfo,
+      userEmail
+    });
+    
+    // If no NextAuth session, check for direct auth
+    if (!session?.user) {
+      if (hasDirectAuthCookie || hasSiteAuthCookie || authInfo?.hasDirectAuth) {
+        console.log('Chat API: Using direct authentication', { userEmail });
+      } else {
+        console.log('Chat API: Unauthorized - No authentication found');
+        return new Response('Unauthorized', { status: 401 });
+      }
+    } else {
+      console.log('Chat API: Authenticated with NextAuth as user:', session.user.email);
     }
     
     const { messages } = requestBody;
@@ -97,7 +121,6 @@ export async function POST(req: NextRequest) {
       envMode: process.env.NODE_ENV || 'development'
     });
 
-    const userId = session.user.id;
     const lastMessage = messages[messages.length - 1];
 
     console.log('Chat API: Processing user message', { 
@@ -107,7 +130,9 @@ export async function POST(req: NextRequest) {
 
     // Save the user's message to the database
     try {
-      await saveMessageToDb(userId, lastMessage.content, true);
+      // Make sure userId is a string
+      const userIdString = String(userId);
+      await saveMessageToDb(userIdString, lastMessage.content, true);
       console.log('Chat API: User message saved to database');
     } catch (error) {
       console.log('Chat API: Error saving user message:', error);
@@ -197,7 +222,9 @@ export async function POST(req: NextRequest) {
 
       // Save the assistant's response to the database
       try {
-        await saveMessageToDb(userId, responseText, false);
+        // Make sure userId is a string
+        const userIdString = String(userId);
+        await saveMessageToDb(userIdString, responseText, false);
         console.log('Chat API: Assistant response saved to database');
       } catch (error) {
         console.log('Chat API: Error saving AI response:', error);
