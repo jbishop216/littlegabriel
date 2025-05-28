@@ -50,11 +50,20 @@ function LoginForm() {
         : '/';
         
 
+      // Use a more direct approach for authentication
       const res = await signIn('credentials', {
         redirect: false,
         email: formData.email,
         password: formData.password,
         callbackUrl: localCallbackUrl,
+      });
+      
+      // Log authentication response for debugging
+      console.log('Authentication response:', { 
+        success: !res?.error,
+        hasUrl: !!res?.url,
+        error: res?.error,
+        url: res?.url
       });
 
 
