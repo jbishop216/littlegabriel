@@ -10,6 +10,7 @@ import OpenAI from 'openai';
 // Get the Assistant ID from environment variables to match the chat API
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID || ENV.OPENAI_ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
 console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID, '(from environment variables)');
+console.log('Bible Chat API environment mode:', ENV.NODE_ENV);
 
 // Force using the assistant API for Bible chat
 const USE_FALLBACK = false; // Override the fallback check to always use the assistant
@@ -87,32 +88,48 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Bible Chat API: Attempting to use Assistant API with ID:', ASSISTANT_ID);
       
-      // First check if the assistant exists - but don't throw if it fails
-      // Just log the error and continue with the attempt
+      // Use a fallback assistant ID if the configured one isn't working
+      const assistantId = ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
+      console.log('Bible Chat API: Using assistant ID:', assistantId);
+      
       try {
-        const assistantCheck = await openai.beta.assistants.retrieve(ASSISTANT_ID);
+        // This will throw an error if the assistant doesn't exist or the API key doesn't have permission
+        const assistantCheck = await openai.beta.assistants.retrieve(assistantId);
         console.log('Bible Chat API: Successfully retrieved assistant:', assistantCheck.id);
       } catch (error: any) {
-        // Log the error but don't throw - we'll let the actual thread creation attempt handle errors
-        console.error('Bible Chat API: Warning - Failed to retrieve assistant:', error);
-        console.log('Bible Chat API: Will still attempt to use the assistant');
+        console.error('Bible Chat API: Failed to retrieve assistant:', error);
+        // If we can't retrieve the assistant, return a clear error message
+        const errorMessage = error?.message || 'Unknown error accessing assistant';
+        return NextResponse.json({
+          error: 'Assistant Access Error',
+          message: `Cannot access assistant: ${errorMessage}. Please check your API key permissions for Assistants.`
+        }, { status: 500 });
       }
       
-      // Create a thread for this Bible chat conversation
+      // Create a thread for this conversation
+      console.log('Bible Chat API: Creating new thread');
       const thread = await openai.beta.threads.create();
-      console.log('Bible chat thread created:', thread.id);
+      console.log('Bible Chat API: Thread created:', thread.id);
 
-      // Add the user's message to the thread
-      await openai.beta.threads.messages.create(thread.id, {
-        role: 'user',
-        content: lastMessage.content
-      });
-      console.log('Added Bible query to thread');
+      // Add all messages to the thread to preserve conversation context
+      console.log('Bible Chat API: Adding messages to thread, count:', messages.length);
+      for (const message of messages) {
+        // Skip system messages as they're handled by the assistant configuration
+        if (message.role === 'system') continue;
+        
+        console.log('Bible Chat API: Adding message with role:', message.role);
+        await openai.beta.threads.messages.create(thread.id, {
+          role: message.role as 'user' | 'assistant',
+          content: message.content
+        });
+      }
+      console.log('Bible Chat API: All messages added to thread');
 
-      // Run the assistant on the thread with Bible-specific focus
+      // Run the assistant on the thread - use the assistant's built-in configuration
+      console.log('Bible Chat API: Starting assistant run with assistant ID:', assistantId);
       const run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: ASSISTANT_ID,
-        instructions: "Focus exclusively on providing biblical insights, historical context, and scriptural explanation rather than personal counseling or therapy. Analyze the biblical text, explain meanings, provide historical background, clarify theological concepts, and give cross-references to other relevant passages. Prioritize scholarly biblical information over therapeutic or emotional support."
+        assistant_id: assistantId
+        // No custom instructions - use the assistant's built-in configuration
       });
       console.log('Started Bible assistant run:', run.id);
 
@@ -125,8 +142,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Get the assistant's message from the thread
+      console.log('Bible Chat API: Retrieving messages from thread');
       const threadMessages = await openai.beta.threads.messages.list(thread.id);
-      console.log('Retrieved Bible chat messages from thread, count:', threadMessages.data.length);
+      console.log('Bible Chat API: Retrieved messages from thread, count:', threadMessages.data.length);
 
       // Find the assistant's messages (should be the latest)
       const assistantMessages = threadMessages.data
@@ -135,13 +153,16 @@ export async function POST(request: NextRequest) {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
+      console.log('Bible Chat API: Found assistant messages', { count: assistantMessages.length });
+
       if (assistantMessages.length === 0) {
-        throw new Error('No assistant messages found in Bible chat thread');
+        console.error('Bible Chat API: No assistant messages found in thread');
+        throw new Error('No assistant messages found in thread');
       }
 
       // Get the latest message
       const latestMessage = assistantMessages[0];
-      console.log('Latest Bible assistant message found, id:', latestMessage.id);
+      console.log('Bible Chat API: Latest assistant message found, id:', latestMessage.id);
 
       // Extract the content from the message
       let responseText = '';
@@ -150,7 +171,10 @@ export async function POST(request: NextRequest) {
           responseText += content.text.value;
         }
       }
-      console.log('Bible response text extracted, length:', responseText.length);
+      console.log('Bible Chat API: Response text extracted', { 
+        length: responseText.length,
+        preview: responseText.substring(0, 50) + '...'
+      });
 
       // Return the response text directly
       return new Response(responseText);
