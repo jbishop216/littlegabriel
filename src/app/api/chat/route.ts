@@ -192,13 +192,19 @@ export async function POST(req: NextRequest) {
       const thread = await openai.beta.threads.create();
       console.log('Chat API: Thread created:', thread.id);
 
-      // Add the user's message to the thread
-      console.log('Chat API: Adding user message to thread');
-      await openai.beta.threads.messages.create(thread.id, {
-        role: 'user',
-        content: lastMessage.content
-      });
-      console.log('Chat API: Added user message to thread');
+      // Add all messages to the thread to preserve conversation context
+      console.log('Chat API: Adding all messages to thread, count:', messages.length);
+      for (const message of messages) {
+        // Skip system messages as they're handled by the assistant configuration
+        if (message.role === 'system') continue;
+        
+        console.log('Chat API: Adding message with role:', message.role);
+        await openai.beta.threads.messages.create(thread.id, {
+          role: message.role as 'user' | 'assistant',
+          content: message.content
+        });
+      }
+      console.log('Chat API: All messages added to thread');
 
       // Run the assistant on the thread
       console.log('Chat API: Starting assistant run with assistant ID:', assistantId);

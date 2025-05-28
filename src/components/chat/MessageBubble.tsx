@@ -90,13 +90,13 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed ${isUser ? 'text-right' : ''}`}>
-          {/* Special handling for the typing indicator ("...") */}
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed ${isUser ? 'text-center' : ''}`}>
+          {/* Special handling for the typing indicator ("...") - iMessage style */}
           {message === "..." ? (
-            <div className="flex items-center space-x-2 py-1">
-              <div className={`animate-pulse rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-3 w-3'}`}></div>
-              <div className={`animate-pulse rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-3 w-3'}`} style={{ animationDelay: '300ms' }}></div>
-              <div className={`animate-pulse rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-3 w-3'}`} style={{ animationDelay: '600ms' }}></div>
+            <div className="flex items-center space-x-2 py-1 justify-center">
+              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '0ms' }}></div>
+              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '200ms' }}></div>
+              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '400ms' }}></div>
             </div>
           ) : (
             /* Regular message content display with or without typing effect */
