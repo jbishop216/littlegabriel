@@ -90,40 +90,14 @@ function LoginForm() {
           console.error('Failed to set storage items', e);
         }
         
-        // Use a more reliable approach - direct window location change after setting localStorage
+        // Use a direct window location change - the simplest and most reliable approach
+        setLoginStatus('Login successful, redirecting to home page...');
+        
+        // Give a moment for the session to be established
         setTimeout(() => {
+          // Use absolute URL with protocol to ensure cookies are properly set
           window.location.href = '/';
-        }, 1000);
-        
-        // Also create a form submission as a backup approach
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/api/auth/session-bridge';
-        
-        // Add hidden fields for authentication
-        const emailField = document.createElement('input');
-        emailField.type = 'hidden';
-        emailField.name = 'email';
-        emailField.value = formData.email;
-        form.appendChild(emailField);
-        
-        const authField = document.createElement('input');
-        authField.type = 'hidden';
-        authField.name = 'authenticated';
-        authField.value = 'true';
-        form.appendChild(authField);
-        
-        // Add the form to the document and submit it
-        document.body.appendChild(form);
-        
-        setTimeout(() => {
-          try {
-            form.submit();
-          } catch (e) {
-            console.error('Form submission failed, falling back to redirect', e);
-            window.location.href = '/';
-          }
-        }, 1000);
+        }, 1500);
       }
     } catch (error) {
       console.error('Unexpected login error:', error);
