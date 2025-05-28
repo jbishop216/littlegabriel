@@ -90,7 +90,12 @@ function LoginForm() {
           console.error('Failed to set storage items', e);
         }
         
-        // Create a direct form submission to our session bridge API to ensure cookies are properly set
+        // Use a more reliable approach - direct window location change after setting localStorage
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+        
+        // Also create a form submission as a backup approach
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/api/auth/session-bridge';

@@ -19,17 +19,14 @@ export async function POST(request: NextRequest) {
     // Check if we have a valid session
     const session = await getServerSession(authOptions);
     
-    // Create a response with a custom cookie as a fallback mechanism
-    const response = NextResponse.json({
-      success: true,
-      session: session ? {
-        user: {
-          email: session.user?.email,
-          name: session.user?.name,
-        }
-      } : null,
-      fallbackAuth: authenticated === 'true',
-    });
+    // Create a redirect response to the home page
+    const response = NextResponse.redirect(new URL('/', request.url));
+    
+    // Add authentication info to the response headers for debugging
+    response.headers.set('X-Auth-Status', 'success');
+    if (session?.user?.email) {
+      response.headers.set('X-Auth-Email', session.user.email);
+    }
     
     // Set the cookie in the response headers
     if (authenticated === 'true' && email) {
