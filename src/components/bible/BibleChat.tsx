@@ -145,10 +145,9 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
         console.log('Attempting to send message to primary Bible chat API');
         let response;
         let assistantResponseText = '';
-        let usedFallback = false;
         
         try {
-          // First try the main Bible chat API (assistant-based)
+          // Use the main Bible chat API with the OpenAI Assistant
           response = await fetch('/api/bible-chat', {
             method: 'POST',
             headers: {
@@ -163,67 +162,52 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
               })),
               userEmail: user?.email,
             }),
-            credentials: 'include'
+            credentials: 'include',
+            // Add longer timeout to give the assistant API time to respond
+            cache: 'no-store',
           });
           
           if (!response.ok) {
-            console.warn(`Primary Bible chat API failed with status: ${response.status}`);
-            throw new Error(`API responded with status: ${response.status}`);
+            console.warn(`Bible chat API failed with status: ${response.status}`);
+            
+            // Try to get more detailed error information
+            let errorDetails = '';
+            try {
+              const errorResponse = await response.json();
+              errorDetails = errorResponse.message || errorResponse.details || errorResponse.error || '';
+              console.error('Bible chat API error details:', errorResponse);
+            } catch (parseError) {
+              // If we can't parse the error response, just use the status
+              console.error('Could not parse error response:', parseError);
+            }
+            
+            throw new Error(`Bible chat API error (${response.status}): ${errorDetails}`);
           }
           
           // Get the assistant's response as text (non-streaming)
           assistantResponseText = await response.text();
-          console.log('Bible chat primary API response received', { 
+          console.log('Bible chat API response received', { 
             length: assistantResponseText.length,
-            usedFallback: false,
-            preview: assistantResponseText.substring(0, 50) + '...',
-            isFromAssistant: assistantResponseText.includes('assistant') || !assistantResponseText.includes('bullet') || !assistantResponseText.includes('list')
+            preview: assistantResponseText.substring(0, 50) + '...'
           });
-        } catch (primaryApiError) {
-          console.log('Primary Bible chat API failed, trying fallback API', primaryApiError);
+        } catch (apiError: any) {
+          console.error('Bible chat API error:', apiError);
           
-          // If the main API fails, try the fallback API
-          usedFallback = true;
-          
-          // Use the fallback Bible chat API (direct completions-based)
-          response = await fetch('/api/bible-chat-fallback', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-              ...(user?.email ? { 'X-User-Email': user.email } : {})
-            },
-            body: JSON.stringify({
-              messages: [...messages, newUserMessage].map(m => ({
-                role: m.role,
-                content: m.content,
-              })),
-              userEmail: user?.email,
-            }),
-            credentials: 'include'
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Fallback Bible chat API responded with status: ${response.status}`);
-          }
-          
-          // Get the response from the fallback API
-          assistantResponseText = await response.text();
-          console.log('Bible chat fallback API response received', { 
-            length: assistantResponseText.length,
-            usedFallback: true 
-          });
+          // Instead of falling back, show the error to help debug the issue
+          setError(`Error connecting to Bible chat assistant: ${apiError?.message || 'Unknown error'}. Please try again later.`);
+          setIsProcessing(false);
+          return; // Exit early since we can't proceed
         }
         
         if (!assistantResponseText || assistantResponseText.trim() === '') {
-          throw new Error('Empty response received from API' + (usedFallback ? ' (fallback)' : ''));
+          throw new Error('Empty response received from API');
         }
         
-        // Add the assistant's message to the messages state
+        // Add the assistant's response to the messages
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: assistantResponseText,
+          content: assistantResponseText
         };
         
         setMessages(prevMessages => [...prevMessages, assistantMessage]);

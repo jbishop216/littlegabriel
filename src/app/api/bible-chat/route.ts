@@ -7,9 +7,9 @@ import OpenAI from 'openai';
 // Bible Chat Assistant ID - using the same Gabriel assistant 
 // This assistant has been properly configured in OpenAI dashboard
 // Make sure we're using the latest GPT-4o assistant ID
-// We're explicitly using the hardcoded ID to ensure consistency
-const ASSISTANT_ID = 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
-console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID, '(hardcoded for reliability)');
+// Get the Assistant ID from environment variables to match the chat API
+const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID || ENV.OPENAI_ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
+console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID, '(from environment variables)');
 
 // Force using the assistant API for Bible chat
 const USE_FALLBACK = false; // Override the fallback check to always use the assistant
@@ -87,16 +87,15 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Bible Chat API: Attempting to use Assistant API with ID:', ASSISTANT_ID);
       
-      // First check if the assistant exists
+      // First check if the assistant exists - but don't throw if it fails
+      // Just log the error and continue with the attempt
       try {
-        // This will throw an error if the assistant doesn't exist or the API key doesn't have permission
         const assistantCheck = await openai.beta.assistants.retrieve(ASSISTANT_ID);
         console.log('Bible Chat API: Successfully retrieved assistant:', assistantCheck.id);
       } catch (error: any) {
-        console.error('Bible Chat API: Failed to retrieve assistant:', error);
-        // If we can't retrieve the assistant, use the fallback API
-        const errorMessage = error?.message || 'Unknown error accessing assistant';
-        throw new Error(`Cannot access assistant: ${errorMessage}. Please check your API key permissions for Assistants.`);
+        // Log the error but don't throw - we'll let the actual thread creation attempt handle errors
+        console.error('Bible Chat API: Warning - Failed to retrieve assistant:', error);
+        console.log('Bible Chat API: Will still attempt to use the assistant');
       }
       
       // Create a thread for this Bible chat conversation
@@ -158,27 +157,24 @@ export async function POST(request: NextRequest) {
     } catch (assistantError) {
       console.error('Error using Assistant API for Bible chat:', assistantError);
       
-      // Check if this is a "no assistant found" error (common in production)
-      const errorMessage = assistantError instanceof Error ? assistantError.message : String(assistantError);
-      if (errorMessage.includes('No assistant found with id')) {
-        console.log('Bible Chat: Detected missing assistant error, redirecting to fallback');
-        // Redirect to the fallback endpoint
-        const response = await fetch(new URL('/api/bible-chat-fallback', request.url), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: request.body
+      // Log detailed error information for debugging
+      if (assistantError instanceof Error) {
+        console.error('Bible Chat API: Error details:', {
+          name: assistantError.name,
+          message: assistantError.message,
+          stack: assistantError.stack
         });
-        
-        if (response.ok) {
-          const text = await response.text();
-          console.log('Bible Chat: Successfully used fallback after Assistant error');
-          return new Response(text);
-        }
       }
       
-      throw assistantError; // re-throw to be caught by the outer try-catch if no fallback was possible
+      // Instead of falling back, return a clear error message
+      // This will help us debug the issue rather than masking it with a fallback
+      return NextResponse.json({
+        error: 'Error using OpenAI Assistant API',
+        message: 'There was an error using the OpenAI Assistant API. Please check your API key permissions and assistant configuration.',
+        details: assistantError instanceof Error ? assistantError.message : String(assistantError)
+      }, { status: 500 });
+      
+      // Note: We're not using fallback anymore as requested by the user
     }
     
   } catch (error: any) {
