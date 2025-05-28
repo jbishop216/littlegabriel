@@ -44,10 +44,10 @@ function LoginForm() {
 
     try {
       // Attempt to sign in with credentials
-      // Force callbackUrl to use localhost instead of Replit URL
+      // Use the current origin as the callback URL
       const localCallbackUrl = typeof window !== 'undefined' 
         ? `${window.location.origin}/` 
-        : 'http://localhost:3000/';
+        : '/';
         
 
       const res = await signIn('credentials', {
