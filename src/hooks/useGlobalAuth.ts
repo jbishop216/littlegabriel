@@ -77,13 +77,37 @@ export function useGlobalAuth() {
   // Get the effective user (either from NextAuth or direct auth)
   const user = session?.user || directAuthUser;
   
+  // Get the auth token from localStorage or cookies
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  
+  // Get the auth token on mount and when auth state changes
+  useEffect(() => {
+    // Try to get token from localStorage first
+    const token = localStorage.getItem('gabriel-auth-token');
+    if (token) {
+      setAuthToken(token);
+      return;
+    }
+    
+    // If we have a session, we can use that
+    if (session?.user) {
+      // For NextAuth, we don't have direct access to the token
+      // but we can set a placeholder to indicate we're authenticated
+      setAuthToken('session-auth-token');
+      return;
+    }
+    
+    // No token found
+    setAuthToken(null);
+  }, [session, isAuthenticated]);
+  
   return {
     user,
     isAuthenticated,
     isLoading,
     logout,
-    // Include the original session and status for compatibility
     session,
-    status
+    status,
+    authToken
   };
 }

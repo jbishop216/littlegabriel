@@ -1,9 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import MessageBubble from '@/components/chat/MessageBubble';
-import { Input } from '@/components/ui/input';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Message } from 'ai';
+import { Input } from '@/components/ui/input';
+import { useTheme } from '@/context/ThemeContext';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
+
+// Define Message type locally if not imported
+type Message = {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+};
 
 // Custom interface for managing chat state with non-streaming API
 export default function GabrielChat() {
@@ -22,6 +28,9 @@ export default function GabrielChat() {
       }
     }
   }, [messages]);
+
+  // Use the global auth hook to get authentication state
+  const { user, isAuthenticated, isLoading, authToken } = useGlobalAuth();
 
   // Handle form submission with context and error handling
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,25 +66,36 @@ export default function GabrielChat() {
         let assistantResponseText = '';
         let usedFallback = false;
         
+        // Prepare the authentication data from our global auth hook
+        const authData = {
+          email: user?.email || '',
+          userId: user?.id || '',
+          hasDirectAuth: isAuthenticated,
+          token: authToken || ''
+        };
+        
+        console.log('Using auth data for API request:', {
+          hasEmail: !!authData.email,
+          hasUserId: !!authData.userId,
+          isAuthenticated,
+          hasToken: !!authData.token
+        });
+        
         try {
           // First try the main chat API (assistant-based)
           response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': authToken ? `Bearer ${authToken}` : ''
             },
-            credentials: 'same-origin', // Important for authentication cookies
+            credentials: 'include', // Important for authentication cookies
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
-              auth: {
-                // Include authentication info in the request
-                email: localStorage.getItem('gabriel-auth-email') || '',
-                timestamp: localStorage.getItem('gabriel-auth-timestamp') || '',
-                hasDirectAuth: !!localStorage.getItem('gabriel-auth-user')
-              }
+              auth: authData
             }),
           });
           
@@ -101,19 +121,15 @@ export default function GabrielChat() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': authToken ? `Bearer ${authToken}` : ''
             },
-            credentials: 'same-origin', // Important for authentication cookies
+            credentials: 'include', // Important for authentication cookies
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
-              auth: {
-                // Include authentication info in the request
-                email: localStorage.getItem('gabriel-auth-email') || '',
-                timestamp: localStorage.getItem('gabriel-auth-timestamp') || '',
-                hasDirectAuth: !!localStorage.getItem('gabriel-auth-user')
-              }
+              auth: authData
             }),
           });
           
@@ -217,14 +233,27 @@ export default function GabrielChat() {
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message, index) => (
-              <MessageBubble
-                key={index}
-                message={message.content}
-                isUser={message.role === 'user'}
-                typing={false} // Disable typewriter effect
-                compact={false}
-              />
+            {messages.map(message => (
+              <div 
+                key={message.id} 
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+              >
+                {message.role === 'user' ? (
+                  <div className="flex flex-col items-end space-y-2">
+                    <div className="relative max-w-[85%] rounded-2xl rounded-tr-none bg-indigo-600 px-5 py-3 text-white shadow-md md:max-w-[75%] lg:max-w-[65%]">
+                      <div className="absolute right-0 top-0 h-3 w-3 translate-x-px rounded-bl-none bg-indigo-600" style={{ right: -5, transform: 'rotate(-45deg)' }}></div>
+                      <div className="whitespace-pre-wrap">{message.content}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-start space-y-2">
+                    <div className="relative max-w-[85%] rounded-2xl rounded-tl-none bg-white px-5 py-3 text-gray-800 shadow-md dark:bg-gray-800 dark:text-gray-200 md:max-w-[75%] lg:max-w-[65%]">
+                      <div className="absolute left-0 top-0 h-3 w-3 translate-x-px rounded-br-none bg-white dark:bg-gray-800" style={{ left: -5, transform: 'rotate(-45deg)' }}></div>
+                      <div className="whitespace-pre-wrap">{message.content}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
             {isProcessing && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
               <div className="flex items-start">
