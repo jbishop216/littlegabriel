@@ -13,6 +13,22 @@ type MessageForAPI = {
 
 export async function POST(req: NextRequest) {
   try {
+    // Check authentication
+    const authHeader = req.headers.get('authorization');
+    const userEmail = req.headers.get('x-user-email');
+    
+    // Get cookies for session-based auth
+    const cookies = req.cookies;
+    const sessionToken = cookies.get('next-auth.session-token')?.value || cookies.get('__Secure-next-auth.session-token')?.value;
+    
+    // Log authentication attempt
+    console.log('Bible chat fallback auth check:', { 
+      hasAuthHeader: !!authHeader,
+      hasUserEmail: !!userEmail,
+      hasSessionToken: !!sessionToken
+    });
+    
+    // Parse the request body
     let requestBody;
     try {
       requestBody = await req.json();

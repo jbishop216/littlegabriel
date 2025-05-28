@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Message } from 'ai';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 
 interface BibleChatProps {
   bibleId: string;
@@ -17,6 +18,7 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
   const [messages, setMessages] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated, authToken, user } = useGlobalAuth();
   
   // Extract book and chapter info from chapterId (e.g., "MRK.4" to "Mark 4")
   const bookCode = chapterId.split('.')[0];
@@ -151,13 +153,17 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+              ...(user?.email ? { 'X-User-Email': user.email } : {})
             },
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
+              userEmail: user?.email,
             }),
+            credentials: 'include'
           });
           
           if (!response.ok) {
@@ -182,13 +188,17 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+              ...(user?.email ? { 'X-User-Email': user.email } : {})
             },
             body: JSON.stringify({
               messages: [...messages, newUserMessage].map(m => ({
                 role: m.role,
                 content: m.content,
               })),
+              userEmail: user?.email,
             }),
+            credentials: 'include'
           });
           
           if (!response.ok) {

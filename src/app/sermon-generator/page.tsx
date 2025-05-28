@@ -1,21 +1,38 @@
-import { Metadata } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
+'use client';
+
 import SermonGeneratorClient from './sermon-generator-client';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Sermon Generator - LittleGabriel',
-  description: 'Generate sermon outlines and inspiration for your congregation',
-};
-
-export default async function SermonGeneratorPage() {
-  const session = await getServerSession(authOptions);
+export default function SermonGeneratorPage() {
+  const { isAuthenticated, isLoading, user } = useGlobalAuth();
+  const router = useRouter();
   
-  // Redirect to login if no session
-  if (!session?.user) {
-    redirect('/login?callbackUrl=/sermon-generator');
+  // Use client-side authentication check with useEffect
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login?callbackUrl=/sermon-generator');
+    }
+  }, [isLoading, isAuthenticated, router]);
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
   }
   
-  return <SermonGeneratorClient />;
+  // Only render the client component if authenticated
+  if (isAuthenticated) {
+    return <SermonGeneratorClient />;  
+  }
+  
+  // Return null while redirecting
+  return null;
 }

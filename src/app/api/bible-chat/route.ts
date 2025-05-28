@@ -42,12 +42,27 @@ export async function POST(request: NextRequest) {
     }
     
     // Otherwise continue with the normal Assistant-based implementation
-    // We don't require authentication for the Bible Chat feature
-    // so all users can get Bible explanations without logging in
+    // Check authentication
+    const authHeader = request.headers.get('authorization');
+    const userEmail = request.headers.get('x-user-email');
+    
+    // Get cookies for session-based auth
+    const cookies = request.cookies;
+    const sessionToken = cookies.get('next-auth.session-token')?.value || cookies.get('__Secure-next-auth.session-token')?.value;
+    
+    // Log authentication attempt
+    console.log('Bible chat auth check:', { 
+      hasAuthHeader: !!authHeader,
+      hasUserEmail: !!userEmail,
+      hasSessionToken: !!sessionToken
+    });
+    
+    // Parse the request body
     const requestBody = await request.json();
     console.log('Bible chat request received:', { 
       hasMessages: !!requestBody?.messages, 
-      messageCount: requestBody?.messages?.length || 0 
+      messageCount: requestBody?.messages?.length || 0,
+      userEmail: requestBody?.userEmail || userEmail
     });
     
     const { messages } = requestBody;
