@@ -80,35 +80,55 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    // Set cookies for authentication
-    response.cookies.set('gabriel-auth-token', token, {
+    // Determine if we're in production
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+    
+    // Get the domain for production
+    let domain = undefined;
+    if (isProduction) {
+      // Extract domain from request URL or use VERCEL_URL
+      const host = request.headers.get('host') || process.env.VERCEL_URL || '';
+      // Strip port if present and ensure it's a valid domain
+      const domainPart = host.split(':')[0];
+      if (domainPart && !domainPart.includes('localhost') && !domainPart.includes('127.0.0.1')) {
+        domain = domainPart;
+      }
+    }
+    
+    // Common cookie options
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: 30 * 24 * 60 * 60, // 30 days
-    });
+      domain: domain,
+    };
+    
+    const nonHttpOnlyCookieOptions = {
+      ...cookieOptions,
+      httpOnly: false, // Allow JavaScript access
+    };
+    
+    // Set cookies for authentication
+    response.cookies.set('gabriel-auth-token', token, cookieOptions);
     
     response.cookies.set('gabriel-auth-user', JSON.stringify({
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
-    }), {
-      httpOnly: false, // Allow JavaScript access
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-    });
+    }), nonHttpOnlyCookieOptions);
     
     // Also set the gabriel-site-auth cookie for compatibility with existing auth
-    response.cookies.set('gabriel-site-auth', 'true', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+    response.cookies.set('gabriel-site-auth', 'true', nonHttpOnlyCookieOptions);
+    
+    // Log cookie settings for debugging
+    console.log('Setting cookies with options:', {
+      isProduction,
+      domain,
+      host: request.headers.get('host'),
+      vercelUrl: process.env.VERCEL_URL
     });
     
     return response;

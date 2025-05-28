@@ -26,8 +26,17 @@ export async function middleware(request: NextRequest) {
   try {
     // Check for our direct auth token first
     const directAuthToken = request.cookies.get('gabriel-auth-token');
-    if (directAuthToken) {
-      console.log(`Direct auth token found for ${pathname}`);
+    const siteAuthCookie = request.cookies.get('gabriel-site-auth');
+    
+    // Log all cookies for debugging in production
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+    if (isProduction) {
+      console.log('All cookies in middleware:', request.cookies.getAll());
+      console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+    }
+    
+    if (directAuthToken || siteAuthCookie) {
+      console.log(`Auth token found for ${pathname}: directAuth=${!!directAuthToken}, siteAuth=${!!siteAuthCookie}`);
       return NextResponse.next();
     }
     

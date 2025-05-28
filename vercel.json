@@ -8,7 +8,8 @@
     "NEXT_PUBLIC_DEPLOYMENT_MODE": "production",
     "NEXT_DISABLE_PARALLEL_ROUTE_PRERENDERING": "1",
     "VERCEL": "1",
-    "VERCEL_ENV": "production"
+    "VERCEL_ENV": "production",
+    "NEXT_PUBLIC_SITE_URL": "${VERCEL_URL}"
   },
   "headers": [
     {

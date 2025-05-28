@@ -75,16 +75,35 @@ export function useDirectAuth(): UseDirectAuthReturn {
     try {
       setIsLoading(true);
       
-      // Call our direct login API
-      const response = await fetch('/api/auth/direct-login', {
+      // Get the base URL - important for production environments
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const apiUrl = `${baseUrl}/api/auth/direct-login`;
+      
+      console.log('Attempting direct login with API URL:', apiUrl);
+      
+      // Call our direct login API with credentials and same-origin
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'same-origin', // Important for cookie handling
       });
       
       const data = await response.json();
+      
+      // Log response for debugging
+      console.log('Direct login response status:', response.status);
+      
+      // Log headers in a TypeScript-friendly way
+      const headerMap: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headerMap[key] = value;
+      });
+      console.log('Direct login headers:', headerMap);
+      
+      console.log('Direct login cookies set:', document.cookie.includes('gabriel-auth-token'));
       
       if (!response.ok || !data.success) {
         return { 
@@ -96,6 +115,7 @@ export function useDirectAuth(): UseDirectAuthReturn {
       // Store user data in localStorage for client-side access
       localStorage.setItem('gabriel-auth-user', JSON.stringify(data.user));
       localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+      localStorage.setItem('gabriel-site-auth', 'true');
       
       // Update state
       setUser(data.user);
