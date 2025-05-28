@@ -175,7 +175,9 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
           assistantResponseText = await response.text();
           console.log('Bible chat primary API response received', { 
             length: assistantResponseText.length,
-            usedFallback: false 
+            usedFallback: false,
+            preview: assistantResponseText.substring(0, 50) + '...',
+            isFromAssistant: assistantResponseText.includes('assistant') || !assistantResponseText.includes('bullet') || !assistantResponseText.includes('list')
           });
         } catch (primaryApiError) {
           console.log('Primary Bible chat API failed, trying fallback API', primaryApiError);

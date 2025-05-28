@@ -6,14 +6,13 @@ import OpenAI from 'openai';
 
 // Bible Chat Assistant ID - using the same Gabriel assistant 
 // This assistant has been properly configured in OpenAI dashboard
+// Make sure we're using the latest GPT-4o assistant ID
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID || ENV.OPENAI_ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2';
 console.log('Using Bible Chat Assistant ID:', ASSISTANT_ID);
 
-// Check if we should immediately redirect to fallback based on environment
-const USE_FALLBACK = shouldUseFallback();
-if (USE_FALLBACK) {
-  console.log('Bible Chat API: Using fallback mode based on environment check');
-}
+// Force using the assistant API for Bible chat
+const USE_FALLBACK = false; // Override the fallback check to always use the assistant
+console.log('Bible Chat API: Forcing use of Assistant API');
 
 export async function POST(request: NextRequest) {
   try {

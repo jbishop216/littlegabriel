@@ -8,6 +8,7 @@ import SermonResult from '@/components/sermon/SermonResult';
 import GlobalLayout from '@/components/GlobalLayout';
 import BackgroundDecorator from '@/components/BackgroundDecorator';
 import { useTheme } from '@/context/ThemeContext';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 
 interface SermonData {
   title: string;
@@ -24,6 +25,7 @@ export default function SermonGeneratorClient() {
   const [sermonData, setSermonData] = useState<SermonData | null>(null);
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const { authToken, user, isAuthenticated } = useGlobalAuth();
   
   // Use different background classes based on the theme
   const backgroundClass = isDarkMode 
@@ -46,8 +48,14 @@ export default function SermonGeneratorClient() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            ...(user?.email ? { 'X-User-Email': user.email } : {})
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            userEmail: user?.email
+          }),
+          credentials: 'include'
         });
         
         data = await response.json();
@@ -68,8 +76,14 @@ export default function SermonGeneratorClient() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            ...(user?.email ? { 'X-User-Email': user.email } : {})
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            userEmail: user?.email
+          }),
+          credentials: 'include'
         });
         
         data = await response.json();

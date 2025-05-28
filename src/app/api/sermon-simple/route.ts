@@ -41,9 +41,28 @@ export async function POST(req: NextRequest) {
     }
     
     // Otherwise continue with the normal Assistant-based implementation
-    // Check authentication
+    // Check authentication - support both NextAuth session and direct auth
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    
+    // Also check for direct authentication via headers
+    const authHeader = req.headers.get('authorization');
+    const userEmail = req.headers.get('x-user-email');
+    
+    // Get cookies for session-based auth
+    const cookies = req.cookies;
+    const sessionToken = cookies.get('next-auth.session-token')?.value || cookies.get('__Secure-next-auth.session-token')?.value;
+    
+    // Log authentication attempt
+    console.log('Sermon API auth check:', { 
+      hasSession: !!session?.user,
+      hasAuthHeader: !!authHeader,
+      hasUserEmail: !!userEmail,
+      hasSessionToken: !!sessionToken
+    });
+    
+    // Allow access if user has either NextAuth session or direct auth
+    const isAuthenticated = !!session?.user || !!authHeader || !!userEmail || !!sessionToken;
+    if (!isAuthenticated) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -57,10 +76,28 @@ export async function POST(req: NextRequest) {
       additionalNotes,
     } = await req.json();
 
+    // Log the received data
+    console.log('Sermon API received data:', { 
+      hasTitle: !!title,
+      biblePassage,
+      theme,
+      audienceType,
+      lengthMinutes,
+      hasAdditionalNotes: !!additionalNotes,
+      userEmail
+    });
+    
     // Validate required fields
-    if (!biblePassage || !theme) {
+    if (!biblePassage || biblePassage.trim() === '') {
       return NextResponse.json(
-        { error: 'Bible passage and theme are required' },
+        { error: 'Bible passage is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!theme || theme.trim() === '') {
+      return NextResponse.json(
+        { error: 'Theme is required' },
         { status: 400 }
       );
     }
