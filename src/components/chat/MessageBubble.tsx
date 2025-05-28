@@ -90,13 +90,13 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed ${isUser ? 'text-center' : ''}`}>
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed text-left`}>
           {/* Special handling for the typing indicator ("...") - iMessage style */}
           {message === "..." ? (
             <div className="flex items-center space-x-2 py-1 justify-center">
-              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '0ms' }}></div>
-              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '200ms' }}></div>
-              <div className={`rounded-full bg-gray-500 dark:bg-gray-400 ${compact ? 'h-2 w-2' : 'h-2.5 w-2.5'} opacity-40 animate-[bounce_1.4s_infinite]`} style={{ animationDelay: '400ms' }}></div>
+              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s' }}></div>
+              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }}></div>
+              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s', animationDelay: '0.4s' }}></div>
             </div>
           ) : (
             /* Regular message content display with or without typing effect */
@@ -111,7 +111,7 @@ export default function MessageBubble({
                 }} 
               />
             ) : (
-              <div className="whitespace-pre-wrap">{message}</div>
+              <div className="whitespace-normal">{message}</div>
             )
           )}
         </div>
