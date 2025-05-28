@@ -72,7 +72,7 @@ export default function MessageBubble({
           compact ? 'px-3 py-2 max-w-[90%]' : 'px-5 py-3 max-w-[85%] md:max-w-[75%] lg:max-w-[65%]'
         } ${
           isUser 
-            ? 'rounded-tr-none bg-gradient-to-r from-indigo-600 to-blue-500 text-white dark:from-indigo-500 dark:to-blue-400' 
+            ? 'rounded-tr-none bg-gradient-to-r from-indigo-600 to-blue-500 text-white dark:from-indigo-500 dark:to-blue-400 flex justify-center items-center' 
             : 'rounded-tl-none bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-200'
         }`}
       >
@@ -90,13 +90,13 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed text-left`}>
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed`}>
           {/* Special handling for the typing indicator ("...") - iMessage style */}
           {message === "..." ? (
             <div className="flex items-center space-x-2 py-1 justify-center">
-              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s' }}></div>
-              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }}></div>
-              <div className="animate-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDuration: '0.6s', animationDelay: '0.4s' }}></div>
+              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2"></div>
+              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDelay: '0.2s' }}></div>
+              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDelay: '0.4s' }}></div>
             </div>
           ) : (
             /* Regular message content display with or without typing effect */
@@ -111,7 +111,7 @@ export default function MessageBubble({
                 }} 
               />
             ) : (
-              <div className="whitespace-normal">{message}</div>
+              <div className="inline-block whitespace-normal">{message}</div>
             )
           )}
         </div>
