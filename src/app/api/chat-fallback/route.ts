@@ -133,8 +133,13 @@ export async function POST(req: NextRequest) {
       envMode: process.env.NODE_ENV || 'development'
     });
 
+    // Extract messages from the request
+    const { messages: conversationMessages = [], auth: conversationAuth = {} } = await req.json();
+  
+    console.log('Chat Fallback API: Received messages:', conversationMessages.length);
+
     // We already have userId defined above, so we don't need to redefine it here
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = conversationMessages[conversationMessages.length - 1];
 
     console.log('Chat Fallback API: Processing user message', { 
       content: lastMessage.content.substring(0, 50) + (lastMessage.content.length > 50 ? '...' : ''),

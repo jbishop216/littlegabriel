@@ -92,12 +92,13 @@ export default function GabrielChat() {
         });
         
         try {
-          // First try the main chat API (assistant-based)
-          response = await fetch('/api/chat', {
+          // Use the direct chat API that preserves conversation history
+          response = await fetch('/api/chat-direct', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': authToken ? `Bearer ${authToken}` : ''
+              'Authorization': authToken ? `Bearer ${authToken}` : '',
+              'X-User-Email': user?.email || ''
             },
             credentials: 'include', // Important for authentication cookies
             body: JSON.stringify({
@@ -105,7 +106,7 @@ export default function GabrielChat() {
                 role: m.role,
                 content: m.content,
               })),
-              auth: authData
+              userEmail: user?.email || ''
             }),
           });
           

@@ -157,8 +157,8 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
         let assistantResponseText = '';
         
         try {
-          // Use the main Bible chat API with the OpenAI Assistant
-          response = await fetch('/api/bible-chat', {
+          // Use the direct Bible chat API that preserves conversation history
+          response = await fetch('/api/bible-chat-direct', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -173,7 +173,6 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
               userEmail: user?.email,
             }),
             credentials: 'include',
-            // Add longer timeout to give the assistant API time to respond
             cache: 'no-store',
           });
           
