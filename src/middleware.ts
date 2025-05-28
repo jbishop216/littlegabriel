@@ -24,14 +24,21 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Get the token using next-auth
+    // Check for our direct auth token first
+    const directAuthToken = request.cookies.get('gabriel-auth-token');
+    if (directAuthToken) {
+      console.log(`Direct auth token found for ${pathname}`);
+      return NextResponse.next();
+    }
+    
+    // Then check for NextAuth token as fallback
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
     // Log token information for debugging
-    console.log(`Token check for ${pathname}:`, token ? 'Token exists' : 'No token');
+    console.log(`Token check for ${pathname}:`, token ? 'NextAuth token exists' : 'No tokens found');
     
     // Allow the request to proceed
     return NextResponse.next();

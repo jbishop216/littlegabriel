@@ -7,10 +7,45 @@ import { Session } from 'next-auth';
 import GlobalLayout from '@/components/GlobalLayout';
 import BackgroundDecorator from '@/components/BackgroundDecorator';
 import { useTheme } from '@/context/ThemeContext';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ChatClient({ session }: { session: Session }) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const router = useRouter();
+  const [directAuthUser, setDirectAuthUser] = useState<{email: string} | null>(null);
+  
+  // Check for direct authentication on client side
+  useEffect(() => {
+    // If we already have a session from NextAuth, no need to check for direct auth
+    if (session?.user?.email && session.user.email !== 'authenticated-user@direct-auth') {
+      return;
+    }
+    
+    try {
+      // Check for direct auth in localStorage
+      const authUserStr = localStorage.getItem('gabriel-auth-user');
+      if (authUserStr) {
+        const authUser = JSON.parse(authUserStr);
+        if (authUser && authUser.email) {
+          setDirectAuthUser(authUser);
+          return;
+        }
+      }
+      
+      // If we get here and don't have a NextAuth session, redirect to login
+      if (!session?.user) {
+        router.push('/login?callbackUrl=/chat');
+      }
+    } catch (error) {
+      console.error('Error checking direct auth:', error);
+      // If there's an error and no session, redirect to login
+      if (!session?.user) {
+        router.push('/login?callbackUrl=/chat');
+      }
+    }
+  }, [session, router]);
   
   // Explicitly apply the gradient based on theme - always use gold in the center
   const backgroundClass = isDarkMode 
@@ -54,7 +89,7 @@ export default function ChatClient({ session }: { session: Session }) {
                 </div>
               </div>
               
-              {session?.user && (
+              {(session?.user || directAuthUser) && (
                 <motion.div 
                   className="hidden items-center space-x-2 text-sm text-white md:flex bg-white bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-full"
                   initial={{ x: 20, opacity: 0 }}
@@ -66,7 +101,9 @@ export default function ChatClient({ session }: { session: Session }) {
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
                   </span>
                   <span>
-                    Connected as: <span className="font-medium">{session.user.email}</span>
+                    Connected as: <span className="font-medium">
+                      {directAuthUser ? directAuthUser.email : session.user.email}
+                    </span>
                   </span>
                 </motion.div>
               )}

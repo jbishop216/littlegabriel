@@ -7,6 +7,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import { useDirectAuth } from '@/hooks/useDirectAuth';
 
 // Component that uses searchParams - must be wrapped in Suspense
 function LoginForm() {
@@ -14,6 +15,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get('callbackUrl') || '/';
   const { data: session, status } = useSession();
+  const { directLogin, isAuthenticated, isLoading: authLoading } = useDirectAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -23,13 +25,13 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
 
-  // Check if user is already logged in
+  // Check if user is already logged in via NextAuth or direct auth
   useEffect(() => {
-    if (session && status === 'authenticated') {
+    if ((session && status === 'authenticated') || isAuthenticated) {
       // User is authenticated, redirect to callback URL
       router.push(callbackUrl);
     }
-  }, [session, status, callbackUrl, router]);
+  }, [session, status, isAuthenticated, callbackUrl, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -43,14 +45,41 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // Attempt to sign in with credentials
-      // Use the current origin as the callback URL
-      const localCallbackUrl = typeof window !== 'undefined' 
-        ? `${window.location.origin}/` 
-        : '/';
+      // First try our direct authentication approach
+      const directResult = await directLogin(formData.email, formData.password);
+      
+      // Log direct auth response for debugging
+      console.log('Direct authentication response:', directResult);
+      
+      if (directResult.success) {
+        // Direct authentication succeeded
+        setLoginStatus('Login successful via direct auth, redirecting...');
         
-
-      // Use a more direct approach for authentication
+        // Store authentication in localStorage as backup
+        try {
+          localStorage.setItem('gabriel-site-auth', 'true');
+          localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+          localStorage.setItem('gabriel-auth-email', formData.email);
+        } catch (e) {
+          console.error('Failed to set storage items', e);
+        }
+        
+        // Give a moment for the session to be established
+        setTimeout(() => {
+          // Use router.push instead of window.location for smoother navigation
+          router.push(callbackUrl || '/');
+        }, 1000);
+        return;
+      }
+      
+      // If direct auth failed, fall back to NextAuth
+      console.log('Falling back to NextAuth...');
+      
+      // Attempt to sign in with NextAuth credentials
+      const localCallbackUrl = typeof window !== 'undefined' 
+        ? `${window.location.origin}${callbackUrl}` 
+        : callbackUrl;
+      
       const res = await signIn('credentials', {
         redirect: false,
         email: formData.email,
@@ -58,46 +87,35 @@ function LoginForm() {
         callbackUrl: localCallbackUrl,
       });
       
-      // Log authentication response for debugging
-      console.log('Authentication response:', { 
+      // Log NextAuth response for debugging
+      console.log('NextAuth response:', { 
         success: !res?.error,
         hasUrl: !!res?.url,
         error: res?.error,
         url: res?.url
       });
 
-
-
       if (res?.error) {
-        setError(res.error);
+        // Both authentication methods failed
+        setError(directResult.error || res.error);
       } else {
-        // Always consider it successful if there's no error
-        setLoginStatus('Login successful, redirecting...');
+        // NextAuth succeeded
+        setLoginStatus('Login successful via NextAuth, redirecting...');
         
         // Store authentication in localStorage as backup
         try {
           localStorage.setItem('gabriel-site-auth', 'true');
           localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
           localStorage.setItem('gabriel-auth-email', formData.email);
-          
-          // Store the credentials in sessionStorage for Vercel deployment
-          // This is a temporary solution until we fix the cookie issues
-          sessionStorage.setItem('gabriel-auth-credentials', JSON.stringify({
-            email: formData.email,
-            timestamp: Date.now()
-          }));
         } catch (e) {
           console.error('Failed to set storage items', e);
         }
         
-        // Use a direct window location change - the simplest and most reliable approach
-        setLoginStatus('Login successful, redirecting to home page...');
-        
-        // Give a moment for the session to be established
+        // Navigate to the callback URL
         setTimeout(() => {
-          // Use absolute URL with protocol to ensure cookies are properly set
-          window.location.href = '/';
-        }, 1500);
+          // Use router.push instead of window.location for smoother navigation
+          router.push(callbackUrl || '/');
+        }, 1000);
       }
     } catch (error) {
       console.error('Unexpected login error:', error);

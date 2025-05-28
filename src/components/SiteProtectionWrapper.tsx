@@ -11,10 +11,24 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
   const [isSiteProtected, setIsSiteProtected] = useState(false); // Start with false to prevent flash
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [hasDirectAuth, setHasDirectAuth] = useState(false);
 
   // Fix hydration issues by ensuring we only render once component is mounted client-side
   useEffect(() => {
     setMounted(true);
+    
+    // Check for direct authentication
+    const authUser = localStorage.getItem('gabriel-auth-user');
+    if (authUser) {
+      try {
+        const userData = JSON.parse(authUser);
+        if (userData && userData.email) {
+          setHasDirectAuth(true);
+        }
+      } catch (e) {
+        console.error('Failed to parse auth user data:', e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -65,10 +79,11 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
       console.log('Site protection status:', { 
         isAuthenticated,
         hasNextAuthSession: !!session,
+        hasDirectAuth,
         isSiteProtected
       });
     }
-  }, [mounted, isAuthenticated, session, isSiteProtected]);
+  }, [mounted, isAuthenticated, session, hasDirectAuth, isSiteProtected]);
 
   // Always render children on the server to avoid hydration mismatch
   if (typeof window === 'undefined') {
@@ -86,8 +101,9 @@ export function SiteProtectionWrapper({ children }: { children: ReactNode }) {
 
   // Allow access if either:
   // 1. User is authenticated through site-wide password OR
-  // 2. User is logged in with NextAuth
-  if (isSiteProtected && !isAuthenticated && !session) {
+  // 2. User is logged in with NextAuth OR
+  // 3. User is authenticated through our direct auth system
+  if (isSiteProtected && !isAuthenticated && !session && !hasDirectAuth) {
     return <PasswordProtection />;
   }
 
