@@ -5,10 +5,12 @@ import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { useSession, signOut } from 'next-auth/react';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { data: session } = useSession();
+  const { user, isAuthenticated, isLoading } = useGlobalAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const prevPathRef = useRef(pathname);
@@ -146,48 +148,91 @@ export default function Navbar() {
               )}
             </button>
 
-            {session ? (
-              <div className="flex items-center space-x-4">
-                <div className="hidden sm:block">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {session.user.email}
-                  </span>
-                </div>
+            {/* Login/Profile Button */}
+            <div className="ml-auto flex items-center">
+              <div className="hidden sm:ml-6 sm:flex sm:items-center">
+                {/* Dark Mode Toggle */}
                 <button
-                  onClick={() => {
-                    // Use absolute URL for the production site to avoid localhost redirects
-                    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-                    signOut({ callbackUrl: `${baseUrl}/` });
-                  }}
-                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  onClick={toggleTheme}
+                  className="rounded-full p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-300"
+                  aria-label="Toggle dark mode"
                 >
-                  Sign out
+                  {theme === 'dark' ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                  )}
                 </button>
+
+                {/* Profile dropdown */}
+                {!isLoading && isAuthenticated && user ? (
+                  <div className="relative ml-4">
+                    <div className="flex items-center">
+                      <Link 
+                        href="/profile" 
+                        className="flex items-center rounded-full bg-indigo-100 px-3 py-1.5 text-sm font-medium text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+                        onClick={() => handleNavigation('/profile')}
+                        prefetch={false}
+                        passHref
+                      >
+                        <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
+                        {user.email || 'Authenticated User'}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          // Clear both NextAuth and direct auth
+                          const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+                          // Clear direct auth cookies and localStorage
+                          if (typeof window !== 'undefined') {
+                            localStorage.removeItem('gabriel-auth-user');
+                            localStorage.removeItem('gabriel-auth-email');
+                            localStorage.removeItem('gabriel-auth-timestamp');
+                            localStorage.removeItem('gabriel-auth-token');
+                            // Set cookies to expire
+                            document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                            document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                          }
+                          // Also sign out from NextAuth
+                          signOut({ callbackUrl: `${baseUrl}/` });
+                        }}
+                        className="ml-2 rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        aria-label="Sign out"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Link 
+                      href="/login" 
+                      className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                      onClick={() => handleNavigation('/login')}
+                      prefetch={false}
+                      passHref
+                    >
+                      Log in
+                    </Link>
+                    <Link 
+                      href="/register" 
+                      className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                      onClick={() => handleNavigation('/register')}
+                      prefetch={false}
+                      passHref
+                    >
+                      Register
+                    </Link>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link 
-                  href="/login" 
-                  onClick={() => handleNavigation('/login')}
-                  prefetch={false} 
-                  passHref
-                >
-                  <button className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
-                    Log in
-                  </button>
-                </Link>
-                <Link 
-                  href="/register" 
-                  onClick={() => handleNavigation('/register')}
-                  prefetch={false} 
-                  passHref
-                >
-                  <button className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    Register
-                  </button>
-                </Link>
-              </div>
-            )}
+            </div>
+
           </div>
 
           {/* Mobile menu button */}
@@ -311,13 +356,13 @@ export default function Navbar() {
         </div>
         <div className="border-t border-gray-200 pb-3 pt-4 dark:border-gray-700">
           <div className="flex items-center px-4">
-            {session ? (
+            {!isLoading && isAuthenticated && user ? (
               <div className="w-full">
                 <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                  {session.user.email}
+                  {user.email || 'Authenticated User'}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {session.user.role}
+                  {user.role || 'User'}
                 </div>
                 <div className="mt-3 flex flex-col space-y-3">
                   <button
@@ -328,8 +373,19 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => {
-                      // Use absolute URL for the production site to avoid localhost redirects
+                      // Clear both NextAuth and direct auth
                       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+                      // Clear direct auth cookies and localStorage
+                      if (typeof window !== 'undefined') {
+                        localStorage.removeItem('gabriel-auth-user');
+                        localStorage.removeItem('gabriel-auth-email');
+                        localStorage.removeItem('gabriel-auth-timestamp');
+                        localStorage.removeItem('gabriel-auth-token');
+                        // Set cookies to expire
+                        document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                        document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                      }
+                      // Also sign out from NextAuth
                       signOut({ callbackUrl: `${baseUrl}/` });
                     }}
                     className="block rounded-md border border-gray-300 bg-white px-3 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
