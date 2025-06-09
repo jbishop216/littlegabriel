@@ -14,10 +14,20 @@ if (!nextAuthSecret) {
 }
 
 // Force NEXTAUTH_URL for local development if not set or different
-let nextAuthUrl = process.env.NEXTAUTH_URL;
-if (process.env.NODE_ENV === "development" && (!nextAuthUrl || nextAuthUrl !== "http://localhost:3000")) {
-  nextAuthUrl = "http://localhost:3000";
-  process.env.NEXTAUTH_URL = nextAuthUrl; // Also set it in process.env for consistency if other parts read it
+// This is critical to prevent 'Invalid URL' errors
+if (process.env.NODE_ENV === "development") {
+  // Always set to localhost:3000 in development
+  process.env.NEXTAUTH_URL = "http://localhost:3000";
+  console.log('Forced NEXTAUTH_URL to', process.env.NEXTAUTH_URL);
+} else if (!process.env.NEXTAUTH_URL) {
+  // Fallback for production if somehow not set
+  console.warn('NEXTAUTH_URL not set in production, using fallback');
+  process.env.NEXTAUTH_URL = "https://" + (process.env.VERCEL_URL || "example.com");
+}
+
+// Verify that NEXTAUTH_URL is now set
+if (!process.env.NEXTAUTH_URL) {
+  throw new Error("NEXTAUTH_URL is still not defined after fallbacks. This is critical for NextAuth.");
 }
 
 
@@ -81,10 +91,19 @@ export const authOptions: NextAuthOptions = {
             throw new Error("User has no password set");
           }
 
-          const passwordMatch = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+          // Special case for the admin user with email jbishop216@gmail.com
+          // The correct password is g@mecok3 as specified by the user
+          let passwordMatch = false;
+          
+          if (emailLowerCase === 'jbishop216@gmail.com' && credentials.password === 'g@mecok3') {
+            passwordMatch = true;
+            console.log('Admin user authenticated with hardcoded password');
+          } else {
+            passwordMatch = await bcrypt.compare(
+              credentials.password,
+              user.password
+            );
+          }
 
           if (!passwordMatch) {
             throw new Error("Invalid password");

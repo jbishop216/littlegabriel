@@ -3,12 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/context/ThemeContext';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
+import MessageBubble from './MessageBubble';
 
 // Define Message type locally if not imported
 type Message = {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
+  hasBeenTyped?: boolean;
 };
 
 // Custom interface for managing chat state with non-streaming API
@@ -32,11 +34,13 @@ export default function GabrielChat() {
   // Use the global auth hook to get authentication state
   const { user, isAuthenticated, isLoading, authToken } = useGlobalAuth();
 
-  // Handle form submission with context and error handling
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submission
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userInput.trim() || isProcessing) return;
-
+    
+    // Don't submit if already processing or input is empty
+    if (isProcessing || !userInput.trim()) return;
+    
     try {
       console.log('Submitting chat question:', { question: userInput });
       
@@ -54,20 +58,46 @@ export default function GabrielChat() {
         id: Date.now().toString(),
         role: 'user',
         content: currentInput,
+        hasBeenTyped: true, // User messages don't need typing animation
       };
       
+      // Remove any existing loading indicators and duplicate messages
+      const uniqueMessages = [];
+      const seenContents = new Set();
+      
+      for (const msg of messages) {
+        // Skip loading indicators
+        if (msg.content === '...') continue;
+        
+        // Skip duplicate messages (same role and content)
+        const key = `${msg.role}:${msg.content}`;
+        if (seenContents.has(key)) continue;
+        
+        seenContents.add(key);
+        uniqueMessages.push(msg);
+      }
+      
       // Update messages with the user's message
-      setMessages(prevMessages => [...prevMessages, newUserMessage]);
+      setMessages([...uniqueMessages, newUserMessage]);
       
       // Add a loading indicator message
       const loadingMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '...'
+        content: '...',
+        hasBeenTyped: true // Loading indicator doesn't need typing animation
       };
       
-      // Show the loading indicator
-      setMessages(prevMessages => [...prevMessages, loadingMessage]);
+      // Show the loading indicator after a small delay to prevent race conditions
+      setTimeout(() => {
+        if (!isProcessing) return; // Don't add if no longer processing
+        
+        setMessages(prevMessages => {
+          // Remove any existing loading indicators
+          const withoutLoading = prevMessages.filter(msg => msg.content !== '...');
+          return [...withoutLoading, loadingMessage];
+        });
+      }, 100);
       
       // Send the message to the API
       try {
@@ -165,6 +195,7 @@ export default function GabrielChat() {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: assistantResponseText,
+          hasBeenTyped: false, // Set to false so it will be typed out
         };
         
         // Remove the loading indicator and add the real response
@@ -256,53 +287,30 @@ export default function GabrielChat() {
         ) : (
           <div className="space-y-4">
             {messages.map(message => (
-              <div 
-                key={message.id} 
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-              >
-                {message.role === 'user' ? (
-                  <div className="flex flex-col items-end space-y-2">
-                    <div className="relative max-w-[85%] rounded-2xl rounded-tr-none bg-indigo-600 px-5 py-3 text-white shadow-md md:max-w-[75%] lg:max-w-[65%]">
-                      <div className="absolute right-0 top-0 h-3 w-3 translate-x-px rounded-bl-none bg-indigo-600" style={{ right: -5, transform: 'rotate(-45deg)' }}></div>
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-start space-y-2">
-                    <div className="relative max-w-[85%] rounded-2xl rounded-tl-none bg-white px-5 py-3 text-gray-800 shadow-md dark:bg-gray-800 dark:text-gray-200 md:max-w-[75%] lg:max-w-[65%]">
-                      <div className="absolute left-0 top-0 h-3 w-3 translate-x-px rounded-br-none bg-white dark:bg-gray-800" style={{ left: -5, transform: 'rotate(-45deg)' }}></div>
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                    </div>
-                  </div>
-                )}
+              <div key={message.id}>
+                <MessageBubble
+                  message={message.content}
+                  isUser={message.role === 'user'}
+                  typing={message.role === 'assistant' && message.content !== '...' && !message.hasBeenTyped}
+                  onTypingComplete={() => {
+                    // Mark this message as having been typed
+                    setMessages(prevMessages => 
+                      prevMessages.map(msg => 
+                        msg.id === message.id ? { ...msg, hasBeenTyped: true } : msg
+                      )
+                    );
+                  }}
+                />
               </div>
             ))}
+
             {isProcessing && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
-              <div className="flex items-start">
-                <div className="mr-3 mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md dark:from-indigo-600 dark:to-blue-700">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    strokeWidth={1.5} 
-                    stroke="currentColor" 
-                    className="h-6 w-6"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" 
-                    />
-                  </svg>
-                </div>
-                <div className="relative max-w-[85%] rounded-2xl rounded-tl-none bg-white px-5 py-3 text-gray-800 shadow-md dark:bg-gray-800 dark:text-gray-200 md:max-w-[75%] lg:max-w-[65%]">
-                  <div className="absolute left-0 top-0 h-3 w-3 translate-x-px rounded-br-none bg-white dark:bg-gray-800" style={{ left: -5, transform: 'rotate(-45deg)' }}></div>
-                  <div className="flex items-center space-x-2 py-1">
-                    <div className="h-3 w-3 animate-pulse rounded-full bg-gray-500 dark:bg-gray-400"></div>
-                    <div className="h-3 w-3 animate-pulse rounded-full bg-gray-500 dark:bg-gray-400" style={{ animationDelay: '300ms' }}></div>
-                    <div className="h-3 w-3 animate-pulse rounded-full bg-gray-500 dark:bg-gray-400" style={{ animationDelay: '600ms' }}></div>
-                  </div>
-                </div>
+              <div key="loading-indicator">
+                <MessageBubble
+                  message="..."
+                  isUser={false}
+                  typing={false}
+                />
               </div>
             )}
           </div>

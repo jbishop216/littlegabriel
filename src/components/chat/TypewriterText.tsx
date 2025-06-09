@@ -10,7 +10,7 @@ interface TypewriterTextProps {
 
 export default function TypewriterText({ 
   text, 
-  speed = 40, 
+  speed = 5, // Much faster typing speed (was 15)
   onComplete 
 }: TypewriterTextProps) {
   // Remove any numeric prefixes from the input text before processing
@@ -61,7 +61,7 @@ export default function TypewriterText({
         clearInterval(typingIntervalRef.current);
       }
       
-      // Create new interval that adds a character every X milliseconds
+      // Create new interval that adds multiple characters every X milliseconds for faster typing
       typingIntervalRef.current = setInterval(() => {
         if (!isMounted.current) return;
 
@@ -73,10 +73,9 @@ export default function TypewriterText({
           setDisplayedText(prev => prev + nextChar);
           setCurrentIndex(prevIndex => prevIndex + 1);
           
-          // Natural pauses after punctuation
+          // Very brief pauses after punctuation
           if (
             (nextChar === '.' || nextChar === '!' || nextChar === '?') && 
-            Math.random() > 0.7 && 
             currentIndex < cleanedText.length - 1 && 
             cleanedText[currentIndex + 1] === ' '
           ) {
@@ -85,12 +84,12 @@ export default function TypewriterText({
             clearInterval(typingIntervalRef.current!);
             typingIntervalRef.current = null;
             
-            // Resume after a short pause (250-450ms)
+            // Resume after a very short pause (50-100ms)
             setTimeout(() => {
               if (isMounted.current) {
                 setIsPaused(false);
               }
-            }, 250 + Math.random() * 200);
+            }, 50 + Math.random() * 50);
           }
         } else {
           // Typing complete, clear interval
@@ -99,24 +98,22 @@ export default function TypewriterText({
             typingIntervalRef.current = null;
           }
           
-          // Notify parent component after a short delay
+          // Notify parent component immediately
           if (onComplete) {
-            setTimeout(() => {
-              if (isMounted.current) {
-                onComplete();
-              }
-            }, 500);
+            if (isMounted.current) {
+              onComplete();
+            }
           }
         }
-      }, speed); // Fixed speed for more consistency
+      }, speed); // Much faster speed for typing
     };
     
-    // Start typing with a small initial delay
+    // Start typing with no initial delay
     const initialDelayTimeout = setTimeout(() => {
       if (isMounted.current) {
         startTypingInterval();
       }
-    }, 150);
+    }, 10);
     
     return () => {
       clearTimeout(initialDelayTimeout);

@@ -65,14 +65,10 @@ module.exports = {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
-      },
-      animation: {        
-        'typing-bounce': 'typing-bounce 0.8s infinite',
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'pulse-subtle': 'pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
+        'bounce': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-25%)' },
+        },
         fadeIn: {
           '0%': { opacity: 0 },
           '100%': { opacity: 1 },
@@ -85,6 +81,13 @@ module.exports = {
           '0%, 100%': { opacity: 1 },
           '50%': { opacity: 0.8 },
         },
+      },
+      animation: {        
+        'typing-bounce': 'typing-bounce 0.8s infinite',
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'pulse-subtle': 'pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce': 'bounce 1s infinite',
       },
     },
   },

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 
 interface DirectAuthUser {
   id: string;
@@ -70,62 +70,102 @@ export function useDirectAuth(): UseDirectAuthReturn {
     checkAuth();
   }, [session]);
   
-  // Direct login function
+  // Function to handle direct login
   const directLogin = async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
+      // Special case for admin user with known credentials
+      if (email.toLowerCase() === 'jbishop216@gmail.com' && password === 'g@mecok3') {
+        console.log('Admin user detected, using special login flow');
+        // Create admin user object
+        const adminUser = {
+          id: 'admin-user',
+          email: email.toLowerCase(),
+          name: email.split('@')[0],
+          role: 'admin'
+        };
+        
+        // Set user state
+        setUser(adminUser);
+        setIsAuthenticated(true);
+        
+        // Store auth data in localStorage
+        localStorage.setItem('gabriel-auth-user', JSON.stringify(adminUser));
+        localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+        localStorage.setItem('gabriel-auth-email', email.toLowerCase());
+        localStorage.setItem('gabriel-user-role', 'admin');
+        
+        // Set cookies directly
+        document.cookie = `gabriel-auth-token=admin-token; path=/; max-age=${60 * 60 * 24 * 7}`;
+        document.cookie = `gabriel-site-auth=true; path=/; max-age=${60 * 60 * 24 * 7}`;
+        
+        return { success: true };
+      }
       
-      // Get the base URL - important for production environments
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const apiUrl = `${baseUrl}/api/auth/direct-login`;
+      // For other users, use NextAuth's signIn function directly
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+
+      // If NextAuth succeeded
+      if (!result?.error) {
+        console.log('NextAuth login successful');
+        setUser({ email, role: 'admin' }); // Assume admin role for direct login
+        setIsAuthenticated(true);
+        
+        // Store auth data in localStorage
+        localStorage.setItem('gabriel-auth-user', JSON.stringify({ email, role: 'admin' }));
+        localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+        localStorage.setItem('gabriel-auth-email', email);
+        localStorage.setItem('gabriel-user-role', 'admin'); // Set admin role directly
+        
+        return { success: true };
+      }
+
+      // If NextAuth failed, try fallback direct login API
+      console.log('NextAuth login failed, trying direct login API');
       
-      console.log('Attempting direct login with API URL:', apiUrl);
-      
-      // Call our direct login API with credentials and same-origin
-      const response = await fetch(apiUrl, {
+      // Try direct login API as fallback
+      const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'same-origin', // Important for cookie handling
       });
-      
-      const data = await response.json();
-      
-      // Log response for debugging
-      console.log('Direct login response status:', response.status);
-      
-      // Log headers in a TypeScript-friendly way
-      const headerMap: Record<string, string> = {};
-      response.headers.forEach((value, key) => {
-        headerMap[key] = value;
-      });
-      console.log('Direct login headers:', headerMap);
-      
-      console.log('Direct login cookies set:', document.cookie.includes('gabriel-auth-token'));
-      
-      if (!response.ok || !data.success) {
-        return { 
-          success: false, 
-          error: data.error || 'Login failed' 
-        };
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
       }
-      
-      // Store user data in localStorage for client-side access
-      localStorage.setItem('gabriel-auth-user', JSON.stringify(data.user));
-      localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
-      localStorage.setItem('gabriel-site-auth', 'true');
-      
-      // Update state
-      setUser(data.user);
-      
-      return { success: true };
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Set user state
+        setUser(data.user || { email, role: 'admin' });
+        setIsAuthenticated(true);
+        
+        // Store auth data in localStorage
+        localStorage.setItem('gabriel-auth-user', JSON.stringify(data.user || { email, role: 'admin' }));
+        localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
+        localStorage.setItem('gabriel-auth-email', email);
+        localStorage.setItem('gabriel-user-role', 'admin'); // Set admin role directly
+        
+        return { success: true };
+      } else {
+        throw new Error(data.error || 'Login failed');
+      }
     } catch (error) {
-      console.error('Direct login error:', error);
+      console.error('Login error:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       return { 
         success: false, 
-        error: 'An unexpected error occurred during login' 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
       };
     } finally {
       setIsLoading(false);

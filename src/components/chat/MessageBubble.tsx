@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
+import FastTyper from './FastTyper';
 
 type MessageBubbleProps = {
   message: string;
@@ -21,7 +22,10 @@ export default function MessageBubble({
   const [showTyping, setShowTyping] = useState(typing);
   const [showContent, setShowContent] = useState(!typing);
 
+  // Effect to handle typing state - only run once when component mounts or typing prop changes
+  // This prevents the typing effect from restarting when user interacts with the page
   useEffect(() => {
+    console.log('MessageBubble typing prop:', typing, 'for message:', message.substring(0, 20));
     if (typing) {
       setShowTyping(true);
       setShowContent(false);
@@ -30,6 +34,8 @@ export default function MessageBubble({
       setShowTyping(false);
       setShowContent(true);
     }
+    // Only depend on typing prop, not on message
+    // This prevents the effect from re-running when other state changes
   }, [typing]);
 
   const handleTypingComplete = () => {
@@ -68,11 +74,11 @@ export default function MessageBubble({
       )}
 
       <div 
-        className={`relative rounded-2xl shadow-md ${
+        className={`relative rounded-2xl shadow-md flex items-center ${
           compact ? 'px-3 py-2 max-w-[90%]' : 'px-5 py-3 max-w-[85%] md:max-w-[75%] lg:max-w-[65%]'
         } ${
           isUser 
-            ? 'rounded-tr-none bg-gradient-to-r from-indigo-600 to-blue-500 text-white dark:from-indigo-500 dark:to-blue-400 flex justify-center items-center' 
+            ? 'rounded-tr-none bg-gradient-to-r from-indigo-600 to-blue-500 text-white dark:from-indigo-500 dark:to-blue-400' 
             : 'rounded-tl-none bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-200'
         }`}
       >
@@ -90,20 +96,19 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-relaxed`}>
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-snug break-words w-full`}>
           {/* Special handling for the typing indicator ("...") - iMessage style */}
           {message === "..." ? (
-            <div className="flex items-center space-x-2 py-1 justify-center">
-              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2"></div>
-              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDelay: '0.2s' }}></div>
-              <div className="animate-typing-bounce rounded-full bg-gray-500 dark:bg-gray-400 h-2 w-2" style={{ animationDelay: '0.4s' }}></div>
+            <div className="flex items-center space-x-2 py-2 justify-center">
+              <div className="animate-bounce delay-0 h-2 w-2 rounded-full bg-current"></div>
+              <div className="animate-bounce delay-150 h-2 w-2 rounded-full bg-current"></div>
+              <div className="animate-bounce delay-300 h-2 w-2 rounded-full bg-current"></div>
             </div>
           ) : (
             /* Regular message content display with or without typing effect */
             showTyping ? (
-              <TypewriterText 
+              <FastTyper 
                 text={message} 
-                speed={compact ? 30 : 50}
                 onComplete={() => {
                   setShowTyping(false);
                   setShowContent(true);
@@ -111,7 +116,13 @@ export default function MessageBubble({
                 }} 
               />
             ) : (
-              <div className="inline-block whitespace-normal">{message}</div>
+              <div className="inline-block whitespace-pre-wrap break-words">
+                {message.split('\n').map((paragraph, index) => (
+                  <p key={index} className={index > 0 ? 'mt-2' : ''}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             )
           )}
         </div>

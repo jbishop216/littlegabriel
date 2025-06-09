@@ -22,6 +22,7 @@ export default async function handler(
     case 'GET':
       return getUserById(userId, res);
     case 'PUT':
+    case 'PATCH':
       return updateUser(userId, req, res);
     case 'DELETE':
       return deleteUser(userId, res);

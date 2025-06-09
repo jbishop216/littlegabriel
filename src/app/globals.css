@@ -56,6 +56,35 @@ body {
   animation: blink 1s step-end infinite;
 }
 
+/* Typing indicator animation - enhanced version */
+@keyframes typing-blink {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.typing-dot {
+  display: inline-block;
+  animation: typing-blink 0.8s infinite both;
+  border-radius: 50%;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Animation delay utilities */
+.delay-0 {
+  animation-delay: 0s;
+}
+
+.delay-150 {
+  animation-delay: 0.15s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
 /* Custom components */
 @layer components {
   .text-gradient {

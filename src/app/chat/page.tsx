@@ -13,15 +13,18 @@ export default async function ChatPage() {
   // Get the session using NextAuth
   const session = await getServerSession(authOptions);
   
-  // For production, we'll let the client-side handle authentication checks
+  // Skip server-side authentication checks in development to prevent flashing
+  // This allows client-side authentication to handle the flow
+  // In production, we'll still let the client-side handle authentication checks
   // This prevents the redirect loop issues in production
   const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
   
-  if (!isProduction && !session?.user) {
-    // In development, redirect if no NextAuth session
-    // The client-side authentication will handle direct auth users
-    redirect('/login?callbackUrl=/chat&checkDirectAuth=true');
-  }
+  // Commenting out the redirect to prevent flashing login screen in development
+  // if (!isProduction && !session?.user) {
+  //   // In development, redirect if no NextAuth session
+  //   // The client-side authentication will handle direct auth users
+  //   redirect('/login?callbackUrl=/chat&checkDirectAuth=true');
+  // }
   
   // Pass the session if available, otherwise create a placeholder session
   const effectiveSession = session || {

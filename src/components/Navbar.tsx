@@ -43,7 +43,57 @@ export default function Navbar() {
     }, 500);
   };
 
-  const userIsAdmin = session?.user?.role === 'admin';
+  // Check for admin status from session, direct auth, and localStorage
+  const [localStorageAdmin, setLocalStorageAdmin] = useState(false);
+  const [localStorageEmail, setLocalStorageEmail] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Check localStorage for admin role and email
+    if (typeof window !== 'undefined') {
+      const isAdmin = localStorage.getItem('gabriel-user-role') === 'admin';
+      setLocalStorageAdmin(isAdmin);
+      
+      // Get email from localStorage
+      const email = localStorage.getItem('gabriel-auth-email');
+      if (email) {
+        setLocalStorageEmail(email);
+      }
+      
+      // Also check for user object in localStorage
+      const userJson = localStorage.getItem('gabriel-auth-user');
+      if (userJson) {
+        try {
+          const userData = JSON.parse(userJson);
+          if (userData.email) {
+            setLocalStorageEmail(userData.email);
+          }
+          if (userData.role === 'admin') {
+            setLocalStorageAdmin(true);
+          }
+        } catch (e) {
+          console.error('Failed to parse user data from localStorage', e);
+        }
+      }
+    }
+  }, []);
+  
+  // Get the effective email to display
+  const displayEmail = session?.user?.email || user?.email || localStorageEmail;
+  
+  // Check if user is admin from any source
+  const userIsAdmin = session?.user?.role === 'admin' || user?.role === 'admin' || localStorageAdmin;
+  
+  // Debug user role information
+  useEffect(() => {
+    if (session?.user) {
+      console.log('NextAuth session user:', session.user);
+      console.log('NextAuth user role:', session.user.role);
+    }
+    if (user) {
+      console.log('Direct auth user:', user);
+      console.log('Direct auth user role:', user.role);
+    }
+  }, [session, user]);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
@@ -96,6 +146,7 @@ export default function Navbar() {
             >
               <span>Prayer Requests</span>
             </Link>
+            {/* Admin button moved to the right side */}
             <Link 
               href="/sermon-generator" 
               className={`inline-flex items-center px-3 py-2 rounded-md hover:bg-indigo-50 text-sm font-medium ${pathname === '/sermon-generator' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-700'} hover:text-indigo-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400 transition-colors`}
@@ -114,24 +165,27 @@ export default function Navbar() {
             >
               <span>Bible Study</span>
             </Link>
-            {userIsAdmin && (
-              <Link 
-                href="/admin" 
-                className={`inline-flex items-center px-3 py-2 rounded-md hover:bg-indigo-50 text-sm font-medium ${pathname === '/admin' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-700'} hover:text-indigo-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400 transition-colors`}
-                onClick={() => handleNavigation('/admin')}
-                prefetch={false}
-                passHref
-              >
-                <span className="flex items-center">
-                  <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
-                  Admin Console
-                </span>
-              </Link>
-            )}
+            {/* Removed duplicate admin panel link */}
           </div>
 
           {/* Right side elements */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+            {/* Admin Panel Button - Now on the right side */}
+            {userIsAdmin && (
+              <Link 
+                href="/admin" 
+                className="inline-flex items-center rounded-md border border-indigo-500 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:border-indigo-400 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-800/40 transition-colors"
+                onClick={() => handleNavigation('/admin')}
+                prefetch={false} 
+                passHref
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="mr-1.5 h-4 w-4">
+                  <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
+                </svg>
+                Admin
+              </Link>
+            )}
+            
             <button
               onClick={toggleTheme}
               className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
@@ -153,7 +207,7 @@ export default function Navbar() {
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
 
                 {/* Profile dropdown */}
-                {!isLoading && isAuthenticated && user ? (
+                {!isLoading && (isAuthenticated || displayEmail) ? (
                   <div className="relative ml-4">
                     <div className="flex items-center">
                       <Link 
@@ -164,7 +218,7 @@ export default function Navbar() {
                         passHref
                       >
                         <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
-                        {user.email || 'Authenticated User'}
+                        {displayEmail || user?.email || 'Authenticated User'}
                       </Link>
                       <button
                         onClick={() => {
@@ -196,7 +250,7 @@ export default function Navbar() {
                   <div className="flex space-x-2">
                     <Link 
                       href="/login" 
-                      className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                      className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600"
                       onClick={() => handleNavigation('/login')}
                       prefetch={false}
                       passHref
@@ -205,7 +259,7 @@ export default function Navbar() {
                     </Link>
                     <Link 
                       href="/register" 
-                      className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                      className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600"
                       onClick={() => handleNavigation('/register')}
                       prefetch={false}
                       passHref
@@ -345,10 +399,29 @@ export default function Navbar() {
                 <div className="text-base font-medium text-gray-800 dark:text-gray-200">
                   {user.email || 'Authenticated User'}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   {user.role || 'User'}
                 </div>
+                
+                {/* Admin button in mobile menu */}
+                {userIsAdmin && (
+                  <div className="mt-3">
+                    <Link href="/admin-login" onClick={() => {
+                      handleNavigation('/admin-login');
+                      setMobileMenuOpen(false);
+                    }} prefetch={false} passHref>
+                      <button className="flex w-full items-center justify-center rounded-md border border-indigo-500 bg-indigo-50 px-3 py-2 text-base font-medium text-indigo-700 hover:bg-indigo-100 dark:border-indigo-400 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-800/40">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="mr-1.5 h-5 w-5">
+                          <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
+                        </svg>
+                        Admin Dashboard
+                      </button>
+                    </Link>
+                  </div>
+                )}
+                
                 <div className="mt-3 flex flex-col space-y-3">
+                  {/* Admin button will be shown separately */}
                   <button
                     onClick={toggleTheme}
                     className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
@@ -365,6 +438,8 @@ export default function Navbar() {
                         localStorage.removeItem('gabriel-auth-email');
                         localStorage.removeItem('gabriel-auth-timestamp');
                         localStorage.removeItem('gabriel-auth-token');
+                        localStorage.removeItem('gabriel-user-role'); // Clear admin role
+                        localStorage.removeItem('gabriel-site-auth');
                         // Set cookies to expire
                         document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                         document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';

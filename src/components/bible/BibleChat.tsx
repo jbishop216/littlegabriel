@@ -334,15 +334,26 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
             <p className="text-xs text-green-600 mt-1">Ask about historical context, meanings, theological concepts, or cross-references to other passages</p>
           </div>
         ) : (
-          messages.map((message, index) => (
-            <MessageBubble
-              key={index}
-              message={message.content}
-              isUser={message.role === 'user'}
-              typing={false} // Disable typewriter effect for Bible chat
-              compact={true}
-            />
-          ))
+          <>
+            {messages.map((message, index) => (
+              <MessageBubble
+                key={index}
+                message={message.content}
+                isUser={message.role === 'user'}
+                typing={false} // Disable typewriter effect for Bible chat
+                compact={true}
+              />
+            ))}
+            {isProcessing && (
+              <MessageBubble
+                key="typing-indicator"
+                message="..."
+                isUser={false}
+                typing={false}
+                compact={true}
+              />
+            )}
+          </>
         )}
         <div ref={messagesEndRef} />
       </CardContent>
