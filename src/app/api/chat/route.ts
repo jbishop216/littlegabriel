@@ -34,7 +34,16 @@ export async function POST(req: NextRequest) {
     if (USE_FALLBACK) {
       console.log('Chat API: Redirecting to fallback endpoint');
       // Clone the request and forward it to the fallback endpoint
-      const response = await fetch(new URL('/api/chat-fallback', req.url), {
+      // Safe URL construction with fallback for build-time
+      let fallbackUrl;
+      try {
+        fallbackUrl = new URL('/api/chat-fallback', req.url);
+      } catch (e) {
+        // During build/SSG, req.url might not be a valid URL
+        // Use absolute URL as fallback
+        fallbackUrl = new URL('/api/chat-fallback', 'https://example.com');
+      }
+      const response = await fetch(fallbackUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

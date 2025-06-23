@@ -29,7 +29,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { searchParams } = new URL(req.url);
+    // Safe URL parsing with fallback for build-time
+    let searchParams;
+    try {
+      searchParams = new URL(req.url).searchParams;
+    } catch (e) {
+      // During build/SSG, req.url might not be a valid URL
+      // Provide fallback values for SSG
+      searchParams = new URLSearchParams();
+    }
     const status = searchParams.get('status');
     const userId = session.user.id;
     const isAdmin = session.user.role === 'admin';

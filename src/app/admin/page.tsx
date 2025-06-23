@@ -1,3 +1,6 @@
+// Skip static generation for this page to avoid Invalid URL errors
+export const dynamic = 'force-dynamic';
+
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';

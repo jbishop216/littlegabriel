@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(
   req: NextApiRequest,
@@ -53,10 +54,24 @@ async function createUser(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { email, name, role, password } = req.body;
     
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Check if email is valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
+    // Check if user already exists (case insensitive)
+    const existingUser = await prisma.user.findFirst({
       where: {
-        email: email.toLowerCase(),
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
       },
     });
     
@@ -64,11 +79,15 @@ async function createUser(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
     
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
     // Create new user
     const newUser = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         name,
+        password: hashedPassword,
         role: role || 'user',
       },
     });

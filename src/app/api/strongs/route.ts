@@ -523,7 +523,15 @@ export async function GET(request: NextRequest) {
   // This allows the feature to work for all users
 
   try {
-    const { searchParams } = new URL(request.url);
+    // Safe URL parsing with fallback for build-time
+    let searchParams;
+    try {
+      searchParams = new URL(request.url).searchParams;
+    } catch (e) {
+      // During build/SSG, request.url might not be a valid URL
+      // Provide fallback values for SSG
+      searchParams = new URLSearchParams();
+    }
     const word = searchParams.get('word');
     const language = searchParams.get('language');
     const number = searchParams.get('number');

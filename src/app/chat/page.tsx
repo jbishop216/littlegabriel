@@ -1,42 +1,21 @@
+// Skip static generation for this page to avoid useSession SSR errors
+export const dynamic = 'force-dynamic';
+
+import { lazy, Suspense } from 'react';
 import { Metadata } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
-import ChatClient from './chat-client';
+
+// Lazy load the chat component with providers
+const ChatWithProviders = lazy(() => import('./ChatWithProviders'));
 
 export const metadata: Metadata = {
   title: 'Chat with Gabriel',
   description: 'Have a faithful conversation with our AI assistant',
 };
 
-export default async function ChatPage() {
-  // Get the session using NextAuth
-  const session = await getServerSession(authOptions);
-  
-  // Skip server-side authentication checks in development to prevent flashing
-  // This allows client-side authentication to handle the flow
-  // In production, we'll still let the client-side handle authentication checks
-  // This prevents the redirect loop issues in production
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
-  
-  // Commenting out the redirect to prevent flashing login screen in development
-  // if (!isProduction && !session?.user) {
-  //   // In development, redirect if no NextAuth session
-  //   // The client-side authentication will handle direct auth users
-  //   redirect('/login?callbackUrl=/chat&checkDirectAuth=true');
-  // }
-  
-  // Pass the session if available, otherwise create a placeholder session
-  const effectiveSession = session || {
-    user: { 
-      id: 'direct-auth-user',
-      email: 'authenticated-user@direct-auth',
-      role: 'user',
-      name: 'Direct Auth User'
-    },
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-  };
-  
-  // Render the chat client with the effective session
-  return <ChatClient session={effectiveSession as any} />;
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <ChatWithProviders />
+    </Suspense>
+  );
 }

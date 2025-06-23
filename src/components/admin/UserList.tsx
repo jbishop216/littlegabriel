@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import CreateUserForm from './CreateUserForm';
 
 type User = {
   id: string;
@@ -107,6 +108,12 @@ export default function UserList() {
         <p className="text-sm text-gray-600 dark:text-gray-400">
           View and manage user accounts and access privileges
         </p>
+      </div>
+      
+      <div className="px-6 py-4">
+        <CreateUserForm onUserCreated={(newUser) => {
+          setUsers(prevUsers => [newUser, ...prevUsers]);
+        }} />
       </div>
       
       <div className="overflow-x-auto">

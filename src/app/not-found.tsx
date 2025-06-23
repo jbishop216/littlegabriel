@@ -1,5 +1,8 @@
 import Link from 'next/link';
 
+// Skip static generation for this page to avoid Invalid URL errors
+export const dynamic = 'force-dynamic';
+
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">

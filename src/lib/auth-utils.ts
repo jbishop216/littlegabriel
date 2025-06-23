@@ -9,11 +9,11 @@ import { NextRequest } from 'next/server';
  * Check if a request has valid authentication (either NextAuth or direct auth)
  */
 export function hasValidAuth(req: NextRequest): boolean {
-  // Check for direct auth cookies
+  // Check for direct auth token only - site-auth flag is not sufficient
   const directAuthCookie = req.cookies.get('gabriel-auth-token');
-  const siteAuthCookie = req.cookies.get('gabriel-site-auth');
   
-  return !!directAuthCookie || !!siteAuthCookie;
+  // Only return true if we have a valid auth token
+  return !!directAuthCookie?.value;
 }
 
 /**
@@ -63,18 +63,21 @@ export function getAuthStateFromLocalStorage() {
       hasDirectAuth: false,
       hasSiteAuth: false,
       isAuthenticated: false,
-      email: null
+      email: null,
+      user: null
     };
   }
   
   try {
     const authUser = localStorage.getItem('gabriel-auth-user');
-    const siteAuth = localStorage.getItem('gabriel-site-auth');
+    const authToken = localStorage.getItem('gabriel-auth-token');
     const authEmail = localStorage.getItem('gabriel-auth-email');
     
-    // Check for auth cookies as well
+    // Check for auth cookies as well - only consider auth-token as valid
     const hasAuthCookie = document.cookie.includes('gabriel-auth-token=');
-    const hasSiteAuthCookie = document.cookie.includes('gabriel-site-auth=true');
+    
+    // Only consider authenticated if we have a valid token or user data
+    const hasValidAuth = !!authToken || !!hasAuthCookie;
     
     let parsedUser = null;
     try {
@@ -86,9 +89,9 @@ export function getAuthStateFromLocalStorage() {
     }
     
     return {
-      hasDirectAuth: !!authUser || !!hasAuthCookie,
-      hasSiteAuth: !!siteAuth || !!hasSiteAuthCookie,
-      isAuthenticated: !!authUser || !!siteAuth || !!hasAuthCookie || !!hasSiteAuthCookie,
+      hasDirectAuth: hasValidAuth,
+      hasSiteAuth: false, // Deprecated - no longer using site-auth flag
+      isAuthenticated: hasValidAuth,
       email: parsedUser?.email || authEmail || null,
       user: parsedUser
     };

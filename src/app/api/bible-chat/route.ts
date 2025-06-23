@@ -22,7 +22,16 @@ export async function POST(request: NextRequest) {
     if (USE_FALLBACK) {
       console.log('Bible Chat API: Redirecting to fallback endpoint');
       // Clone the request and forward it to the fallback endpoint
-      const response = await fetch(new URL('/api/bible-chat-fallback', request.url), {
+      // Safe URL construction with fallback for build-time
+      let fallbackUrl;
+      try {
+        fallbackUrl = new URL('/api/bible-chat-fallback', request.url);
+      } catch (e) {
+        // During build/SSG, request.url might not be a valid URL
+        // Use absolute URL as fallback
+        fallbackUrl = new URL('/api/bible-chat-fallback', 'https://example.com');
+      }
+      const response = await fetch(fallbackUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

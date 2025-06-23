@@ -20,7 +20,16 @@ export async function POST(req: NextRequest) {
     if (USE_FALLBACK) {
       console.log('Sermon Generator API: Redirecting to fallback endpoint');
       // Clone the request and forward it to the fallback endpoint
-      const response = await fetch(new URL('/api/sermon-simple-fallback', req.url), {
+      // Safe URL construction with fallback for build-time
+      let fallbackUrl;
+      try {
+        fallbackUrl = new URL('/api/sermon-simple-fallback', req.url);
+      } catch (e) {
+        // During build/SSG, req.url might not be a valid URL
+        // Use absolute URL as fallback
+        fallbackUrl = new URL('/api/sermon-simple-fallback', 'https://example.com');
+      }
+      const response = await fetch(fallbackUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -405,7 +414,16 @@ Focus on biblical accuracy, theological depth, practical application, and provid
       if (errorMessage.includes('No assistant found with id')) {
         console.log('Sermon Generator: Detected missing assistant error, redirecting to fallback');
         // Redirect to the fallback endpoint
-        const response = await fetch(new URL('/api/sermon-simple-fallback', req.url), {
+        // Safe URL construction with fallback for build-time
+        let fallbackUrl;
+        try {
+          fallbackUrl = new URL('/api/sermon-simple-fallback', req.url);
+        } catch (e) {
+          // During build/SSG, req.url might not be a valid URL
+          // Use absolute URL as fallback
+          fallbackUrl = new URL('/api/sermon-simple-fallback', 'https://example.com');
+        }
+        const response = await fetch(fallbackUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

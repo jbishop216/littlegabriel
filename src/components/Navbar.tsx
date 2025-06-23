@@ -222,20 +222,37 @@ export default function Navbar() {
                       </Link>
                       <button
                         onClick={() => {
-                          // Clear both NextAuth and direct auth
-                          const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-                          // Clear direct auth cookies and localStorage
-                          if (typeof window !== 'undefined') {
-                            localStorage.removeItem('gabriel-auth-user');
-                            localStorage.removeItem('gabriel-auth-email');
-                            localStorage.removeItem('gabriel-auth-timestamp');
-                            localStorage.removeItem('gabriel-auth-token');
-                            // Set cookies to expire
-                            document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                            document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                          }
-                          // Also sign out from NextAuth
-                          signOut({ callbackUrl: `${baseUrl}/` });
+                          console.log('Mobile logout button clicked');
+                          
+                          // Create a full URL with the current hostname and port
+                          const baseUrl = window.location.origin;
+                          const loginUrl = `${baseUrl}/login`;
+                          console.log('Using login URL for mobile:', loginUrl);
+                          
+                          // Handle the redirect ourselves instead of relying on NextAuth
+                          signOut({ 
+                            redirect: false
+                          }).then(() => {
+                            // Force redirect to the login page with the current port
+                            window.location.href = loginUrl;
+                            if (typeof window !== 'undefined') {
+                              console.log('Clearing localStorage and cookies');
+                              localStorage.removeItem('gabriel-auth-user');
+                              localStorage.removeItem('gabriel-auth-email');
+                              localStorage.removeItem('gabriel-auth-timestamp');
+                              localStorage.removeItem('gabriel-auth-token');
+                              localStorage.removeItem('gabriel-user-role'); // Clear admin role
+                              localStorage.removeItem('gabriel-site-auth');
+                              
+                              // Set cookies to expire
+                              document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                              document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                            }
+                          }).catch(error => {
+                            console.error('Error during mobile signOut:', error);
+                            // Force redirect to login page if signOut fails
+                            window.location.href = loginUrl;
+                          });
                         }}
                         className="ml-2 rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         aria-label="Sign out"
@@ -430,22 +447,47 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => {
-                      // Clear both NextAuth and direct auth
-                      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-                      // Clear direct auth cookies and localStorage
+                      console.log('Logout button clicked');
+                      
+                      // Create a full URL with the current hostname and port
+                      const baseUrl = window.location.origin;
+                      const loginUrl = `${baseUrl}/login`;
+                      console.log('Using login URL:', loginUrl);
+                      
+                      // Also set the NEXTAUTH_URL to include the current port
+                      // This helps ensure the redirect works correctly
                       if (typeof window !== 'undefined') {
-                        localStorage.removeItem('gabriel-auth-user');
-                        localStorage.removeItem('gabriel-auth-email');
-                        localStorage.removeItem('gabriel-auth-timestamp');
-                        localStorage.removeItem('gabriel-auth-token');
-                        localStorage.removeItem('gabriel-user-role'); // Clear admin role
-                        localStorage.removeItem('gabriel-site-auth');
-                        // Set cookies to expire
-                        document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                        document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                        const port = window.location.port || '3000';
+                        console.log('Current port:', port);
                       }
-                      // Also sign out from NextAuth
-                      signOut({ callbackUrl: `${baseUrl}/` });
+                      
+                      // Instead of relying on NextAuth redirect, we'll handle it ourselves
+                      signOut({ 
+                        redirect: false
+                      }).then(() => {
+                        // Force redirect to the login page with the current port
+                        window.location.href = loginUrl;
+                        console.log('NextAuth signOut completed');
+                        
+                        // Clear direct auth cookies and localStorage
+                        if (typeof window !== 'undefined') {
+                          console.log('Clearing localStorage and cookies');
+                          localStorage.removeItem('gabriel-auth-user');
+                          localStorage.removeItem('gabriel-auth-email');
+                          localStorage.removeItem('gabriel-auth-timestamp');
+                          localStorage.removeItem('gabriel-auth-token');
+                          localStorage.removeItem('gabriel-user-role'); // Clear admin role
+                          localStorage.removeItem('gabriel-site-auth');
+                          
+                          // Set cookies to expire
+                          document.cookie = 'gabriel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                          document.cookie = 'gabriel-site-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                        }
+                      }).catch(error => {
+                        console.error('Error during signOut:', error);
+                        // Force redirect to login page if signOut fails
+                        window.location.href = loginUrl;
+                      });
                     }}
                     className="block rounded-md border border-gray-300 bg-white px-3 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                   >

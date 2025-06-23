@@ -21,19 +21,22 @@ export function useGlobalAuth() {
   useEffect(() => {
     const checkAuthState = () => {
       try {
-        // First check if we have a NextAuth session
+        // First check if we have a NextAuth session - this is the most reliable
         const hasNextAuth = status === 'authenticated' && !!session;
         
-        // Then check for direct authentication
+        // Then check for direct authentication - only trust if we have a token
         const authState = getAuthStateFromLocalStorage();
         
-        // Set authentication state
+        // Set authentication state - NextAuth session takes precedence
         const isAuth = hasNextAuth || authState.isAuthenticated;
         setIsAuthenticated(isAuth);
         
-        // Set direct auth user if available
-        if (authState.user) {
+        // Set direct auth user if available and we don't have a NextAuth session
+        if (!hasNextAuth && authState.user) {
           setDirectAuthUser(authState.user);
+        } else if (hasNextAuth) {
+          // Clear direct auth user if we have a NextAuth session
+          setDirectAuthUser(null);
         }
         
         // Log authentication state for debugging
@@ -41,17 +44,32 @@ export function useGlobalAuth() {
           hasNextAuth,
           directAuth: authState,
           isAuthenticated: isAuth,
-          pathname
+          pathname,
+          status
         });
+        
+        // Only redirect if we're sure about the authentication state
+        // Wait until NextAuth has finished loading before redirecting
+        if (status !== 'loading') {
+          // If we're not authenticated and not on a public route, redirect to login
+          if (!isAuth && pathname && pathname !== '/login' && pathname !== '/register' && 
+              !pathname.startsWith('/api/') && !pathname.includes('forgot-password')) {
+            console.log('Not authenticated, redirecting to login');
+            router.push('/login');
+          }
+        }
       } catch (error) {
         console.error('Error checking auth state:', error);
       } finally {
-        setIsLoading(false);
+        // Only set loading to false when NextAuth has finished loading
+        if (status !== 'loading') {
+          setIsLoading(false);
+        }
       }
     };
     
     checkAuthState();
-  }, [session, status, pathname]);
+  }, [session, status, pathname, router]);
   
   // Function to handle logout
   const logout = () => {

@@ -2,6 +2,7 @@
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig = {
+  
   // Environment variables available to the client
   env: {
     OPENAI_ASSISTANT_ID: process.env.OPENAI_ASSISTANT_ID || 'asst_BpFiJmyhoHFYUj5ooLEoHEX2',
@@ -9,6 +10,12 @@ const nextConfig = {
     FORCE_OPENAI_ASSISTANT: 'true',
     NEXT_PUBLIC_SITE_PASSWORD_PROTECTION: process.env.SITE_PASSWORD_PROTECTION || 'true',
     BUILD_TIMESTAMP: Date.now().toString(),
+  },
+  
+  // Skip static generation for problematic routes
+  experimental: {
+    workerThreads: true,
+    cpus: 4
   },
   
   // Production optimizations

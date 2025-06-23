@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'LittleGabriel - Faith-Based AI Counseling',
   description: 'A faith-based AI counseling application providing spiritual guidance and support.',
+  metadataBase: new URL('https://littlegabriel.vercel.app'),
 };
 
 export default function RootLayout({

@@ -1,42 +1,23 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// Force environment variables for local development
-const isDevelopment = process.env.NODE_ENV === 'development';
+// Only set a dummy URL during build time to prevent 'Invalid URL' errors
+const isBuildTime = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build';
 
-// Override NEXTAUTH_URL for local development
-if (isDevelopment) {
-  process.env.NEXTAUTH_URL = 'http://localhost:3000';
-  console.log('Forced NEXTAUTH_URL to', process.env.NEXTAUTH_URL);
+if (isBuildTime) {
+  // During build time, use a safe dummy URL to prevent 'Invalid URL' errors
+  process.env.NEXTAUTH_URL = 'https://example.com';
+  console.log('Build-time detected in NextAuth route, using safe dummy NEXTAUTH_URL');
 }
 
-// Create modified auth options for local development
-const localAuthOptions = {
-  ...authOptions,
-  // Force these options for local development to override any env vars
-  // Using the same secret from environment - this is critical for JWT consistency
-  url: 'http://localhost:3000', // Force URL directly in options
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax" as "lax", // Fix TypeScript error by specifying correct type
-        path: '/',
-        secure: false, // Allow non-HTTPS locally
-        domain: 'localhost', // Force localhost domain
-      },
-    },
-  }
-};
+// Log auth configuration (for debugging only)
+if (process.env.NODE_ENV === 'development') {
+  console.log('NextAuth Configuration:', {
+    secret: process.env.NEXTAUTH_SECRET ? 'present (hidden)' : 'missing',
+    url: process.env.NEXTAUTH_URL || 'not set',
+  });
+}
 
-// Log auth configuration
-console.log('NextAuth Configuration:', {
-  secret: 'present (hidden)',
-  url: process.env.NEXTAUTH_URL || 'not set',
-  forceLocalhost: true,
-});
-
-// Use the modified options for local development
-const handler = NextAuth(localAuthOptions);
+// Use the standard auth options
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

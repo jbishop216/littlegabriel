@@ -20,7 +20,16 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     
     // Create a redirect response to the home page
-    const response = NextResponse.redirect(new URL('/', request.url));
+    // Safe URL construction with fallback for build-time
+    let redirectUrl;
+    try {
+      redirectUrl = new URL('/', request.url);
+    } catch (e) {
+      // During build/SSG, request.url might not be a valid URL
+      // Use absolute URL as fallback
+      redirectUrl = new URL('/', 'https://example.com');
+    }
+    const response = NextResponse.redirect(redirectUrl);
     
     // Add authentication info to the response headers for debugging
     response.headers.set('X-Auth-Status', 'success');

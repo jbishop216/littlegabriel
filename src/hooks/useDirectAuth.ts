@@ -25,6 +25,8 @@ interface UseDirectAuthReturn {
 export function useDirectAuth(): UseDirectAuthReturn {
   const [user, setUser] = useState<DirectAuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   
   // Also use NextAuth session as a fallback
@@ -114,11 +116,12 @@ export function useDirectAuth(): UseDirectAuthReturn {
       // If NextAuth succeeded
       if (!result?.error) {
         console.log('NextAuth login successful');
-        setUser({ email, role: 'admin' }); // Assume admin role for direct login
+        const userObj = { id: `user-${Date.now()}`, email, role: 'admin' }; // Add id property
+        setUser(userObj); // Assume admin role for direct login
         setIsAuthenticated(true);
         
         // Store auth data in localStorage
-        localStorage.setItem('gabriel-auth-user', JSON.stringify({ email, role: 'admin' }));
+        localStorage.setItem('gabriel-auth-user', JSON.stringify(userObj));
         localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
         localStorage.setItem('gabriel-auth-email', email);
         localStorage.setItem('gabriel-user-role', 'admin'); // Set admin role directly
@@ -146,12 +149,15 @@ export function useDirectAuth(): UseDirectAuthReturn {
       const data = await response.json();
 
       if (data.success) {
+        // Create a fallback user object with required id property
+        const fallbackUser = { id: `user-${Date.now()}`, email, role: 'admin' };
+        
         // Set user state
-        setUser(data.user || { email, role: 'admin' });
+        setUser(data.user || fallbackUser);
         setIsAuthenticated(true);
         
         // Store auth data in localStorage
-        localStorage.setItem('gabriel-auth-user', JSON.stringify(data.user || { email, role: 'admin' }));
+        localStorage.setItem('gabriel-auth-user', JSON.stringify(data.user || fallbackUser));
         localStorage.setItem('gabriel-auth-timestamp', Date.now().toString());
         localStorage.setItem('gabriel-auth-email', email);
         localStorage.setItem('gabriel-user-role', 'admin'); // Set admin role directly
@@ -177,13 +183,18 @@ export function useDirectAuth(): UseDirectAuthReturn {
     // Clear localStorage
     localStorage.removeItem('gabriel-auth-user');
     localStorage.removeItem('gabriel-auth-timestamp');
+    localStorage.removeItem('gabriel-auth-email');
+    localStorage.removeItem('gabriel-user-role');
+    localStorage.removeItem('gabriel-site-auth');
     
     // Clear state
     setUser(null);
+    setIsAuthenticated(false);
     
     // Clear cookies by setting them to expire
     document.cookie = 'gabriel-auth-token=; Max-Age=0; path=/;';
     document.cookie = 'gabriel-auth-user=; Max-Age=0; path=/;';
+    document.cookie = 'gabriel-site-auth=; Max-Age=0; path=/;';
     
     // Redirect to login page
     router.push('/login');
@@ -191,7 +202,7 @@ export function useDirectAuth(): UseDirectAuthReturn {
   
   return {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     directLogin,
     logout,

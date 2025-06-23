@@ -13,16 +13,27 @@ if (!nextAuthSecret) {
   throw new Error("NEXTAUTH_SECRET is not defined. Critical for JWT signing and encryption.");
 }
 
-// Force NEXTAUTH_URL for local development if not set or different
+// Handle NEXTAUTH_URL for different environments
 // This is critical to prevent 'Invalid URL' errors
-if (process.env.NODE_ENV === "development") {
-  // Always set to localhost:3000 in development
-  process.env.NEXTAUTH_URL = "http://localhost:3000";
-  console.log('Forced NEXTAUTH_URL to', process.env.NEXTAUTH_URL);
+const isBuildTime = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build';
+
+// During build time, use a safe dummy URL to prevent 'Invalid URL' errors
+if (isBuildTime) {
+  console.log('Build-time detected, using safe dummy NEXTAUTH_URL');
+  process.env.NEXTAUTH_URL = "https://example.com";
 } else if (!process.env.NEXTAUTH_URL) {
-  // Fallback for production if somehow not set
-  console.warn('NEXTAUTH_URL not set in production, using fallback');
-  process.env.NEXTAUTH_URL = "https://" + (process.env.VERCEL_URL || "example.com");
+  // For development or production, if NEXTAUTH_URL is not set, use appropriate fallbacks
+  if (process.env.NODE_ENV === "development") {
+    // In development, use localhost with port 3000 as a default
+    // This ensures the port is included in the URL
+    const port = process.env.PORT || 3000;
+    process.env.NEXTAUTH_URL = `http://localhost:${port}`;
+    console.log('Set development NEXTAUTH_URL with port:', process.env.NEXTAUTH_URL);
+  } else {
+    // Fallback for production if somehow not set
+    console.warn('NEXTAUTH_URL not set in production, using fallback');
+    process.env.NEXTAUTH_URL = "https://" + (process.env.VERCEL_URL || "example.com");
+  }
 }
 
 // Verify that NEXTAUTH_URL is now set
@@ -91,19 +102,11 @@ export const authOptions: NextAuthOptions = {
             throw new Error("User has no password set");
           }
 
-          // Special case for the admin user with email jbishop216@gmail.com
-          // The correct password is g@mecok3 as specified by the user
-          let passwordMatch = false;
-          
-          if (emailLowerCase === 'jbishop216@gmail.com' && credentials.password === 'g@mecok3') {
-            passwordMatch = true;
-            console.log('Admin user authenticated with hardcoded password');
-          } else {
-            passwordMatch = await bcrypt.compare(
-              credentials.password,
-              user.password
-            );
-          }
+          // Check password match using bcrypt
+          const passwordMatch = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
 
           if (!passwordMatch) {
             throw new Error("Invalid password");

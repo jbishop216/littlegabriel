@@ -2,6 +2,9 @@ import { Metadata } from 'next';
 import GlobalLayout from '@/components/GlobalLayout';
 import { getGradientForRoute } from '@/lib/gradients';
 
+// Skip static generation for this page to avoid Invalid URL errors
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Privacy Policy | LittleGabriel',
   description: 'Privacy Policy for LittleGabriel - Learn how we protect your personal information.',
