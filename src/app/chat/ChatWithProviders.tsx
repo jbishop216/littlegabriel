@@ -82,56 +82,15 @@ function ChatWithProviders() {
   // Use NextAuth session if available, otherwise use direct auth session
   const effectiveSession = session || directAuthSession;
 
-  // If no session at all, try to redirect to homepage and back to chat
-  // This helps with Google auth where the session might need a refresh
+  // If no session at all, redirect to login
   if (!effectiveSession) {
-    return (
-      <div className="flex h-screen items-center justify-center flex-col">
-        <p className="text-xl mb-4">Checking authentication status...</p>
-        <p className="text-sm mb-4">If you're not redirected automatically, please click one of the options below:</p>
-        <div className="flex flex-col space-y-4">
-          <a 
-            href="/" 
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center"
-            onClick={(e) => {
-              e.preventDefault();
-              // Go to homepage first
-              window.location.href = '/';
-            }}
-          >
-            Go to Homepage
-          </a>
-          <a 
-            href="/chat" 
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center"
-            onClick={(e) => {
-              e.preventDefault();
-              // Force refresh the chat page
-              window.location.href = '/chat?refresh=' + new Date().getTime();
-            }}
-          >
-            Retry Chat Page
-          </a>
-          <a 
-            href="#" 
-            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-center"
-            onClick={(e) => {
-              e.preventDefault();
-              // Try to sign in with Google again
-              signIn('google', { callbackUrl: '/chat' });
-            }}
-          >
-            Sign in with Google Again
-          </a>
-          <a 
-            href="/login" 
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-center"
-          >
-            Go to Login
-          </a>
-        </div>
-      </div>
-    );
+    // Instead of showing an intermediate page, redirect directly to login
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    
+    // Show a minimal loading state while redirecting
+    return <div className="flex h-screen items-center justify-center">Redirecting to login...</div>;
   }
 
   return <ChatClient session={effectiveSession as any} />;

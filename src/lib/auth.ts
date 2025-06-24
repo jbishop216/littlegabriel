@@ -74,6 +74,12 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
+  // Ensure session is always available immediately after sign-in
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  // Reduce JWT maxAge to ensure faster session refresh
+  jwt: {
+    maxAge: 60 * 60, // 1 hour in seconds
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',
@@ -85,6 +91,7 @@ export const authOptions: NextAuthOptions = {
           response_type: "code"
         }
       },
+      // Google provider configuration ends here
       profile(profile) {
         return {
           id: profile.sub,
@@ -151,6 +158,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    // Always redirect to chat page after successful sign-in
+    async redirect({ url, baseUrl }) {
+      // After successful sign-in, go directly to chat page
+      return `${baseUrl}/chat`;
+    },
     async signIn({ user, account, profile, email, credentials }) {
       // For Google sign-in, check if user exists and link accounts
       if (account?.provider === 'google' && profile) {

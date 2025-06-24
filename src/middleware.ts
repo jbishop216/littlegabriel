@@ -68,11 +68,8 @@ export async function middleware(request: NextRequest) {
     }
     
     // If we get here, user is not authenticated
-    // For the /chat route specifically, we'll let the client-side handle the auth check
-    // This helps with timing issues where the session might not be fully initialized yet
-    if (pathname === '/chat') {
-      return NextResponse.next();
-    }
+    // Always redirect unauthenticated users to login
+    // We no longer need special handling for /chat since we want consistent behavior
     
     // For other protected routes, redirect to login
     const url = request.nextUrl.clone();
