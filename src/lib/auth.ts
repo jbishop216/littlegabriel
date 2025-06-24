@@ -31,7 +31,15 @@ if (isBuildTime) {
   } else if (!process.env.NEXTAUTH_URL) {
     // Fallback for production if somehow not set
     console.warn('NEXTAUTH_URL not set in production, using fallback');
-    process.env.NEXTAUTH_URL = "https://" + (process.env.VERCEL_URL || "example.com");
+    if (process.env.VERCEL_URL) {
+      // Use VERCEL_URL with https protocol
+      process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+      console.log('Set production NEXTAUTH_URL from VERCEL_URL:', process.env.NEXTAUTH_URL);
+    } else {
+      // Final fallback
+      process.env.NEXTAUTH_URL = "https://littlegabriel.vercel.app";
+      console.log('Set hardcoded production NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+    }
   }
 }
 
