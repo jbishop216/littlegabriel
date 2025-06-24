@@ -13,23 +13,34 @@ function ChatWithProviders() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for direct auth if no NextAuth session
-    if (!session) {
-      const authState = getAuthStateFromLocalStorage();
-      // Check for authenticated state and valid user data
-      if (authState?.isAuthenticated && authState?.user) {
-        // Create a placeholder session for direct auth users
-        setDirectAuthSession({
-          user: { 
-            id: 'direct-auth-user',
-            email: authState.email || 'authenticated-user@direct-auth',
-            role: 'user',
-            name: authState.user?.name || 'Direct Auth User'
-          },
-          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-        });
-      }
+    // First check if we have a NextAuth session
+    if (session) {
+      console.log('NextAuth session found:', session);
+      setIsLoading(false);
+      return;
     }
+    
+    // If no NextAuth session, check for direct auth
+    const authState = getAuthStateFromLocalStorage();
+    console.log('Auth state from localStorage:', authState);
+    
+    // Check for authenticated state and valid user data
+    if (authState?.isAuthenticated && authState?.user) {
+      console.log('Direct auth session found');
+      // Create a placeholder session for direct auth users
+      setDirectAuthSession({
+        user: { 
+          id: 'direct-auth-user',
+          email: authState.email || 'authenticated-user@direct-auth',
+          role: 'user',
+          name: authState.user?.name || 'Direct Auth User'
+        },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+      });
+    } else {
+      console.log('No auth session found');
+    }
+    
     setIsLoading(false);
   }, [session]);
 
@@ -40,13 +51,23 @@ function ChatWithProviders() {
   // Use NextAuth session if available, otherwise use direct auth session
   const effectiveSession = session || directAuthSession;
 
-  // If no session at all, show a message (this shouldn't happen due to middleware)
+  // If no session at all, try to redirect to homepage and back to chat
+  // This helps with Google auth where the session might need a refresh
   if (!effectiveSession) {
     return (
       <div className="flex h-screen items-center justify-center flex-col">
-        <p className="text-xl mb-4">Please log in to access the chat.</p>
-        <a href="/login" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Go to Login
+        <p className="text-xl mb-4">Checking authentication status...</p>
+        <p className="text-sm mb-4">If you're not redirected automatically, please click below:</p>
+        <a 
+          href="/?redirectTo=/chat" 
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={(e) => {
+            e.preventDefault();
+            // Try to refresh the page first to see if session is available
+            window.location.href = '/?redirectTo=/chat';
+          }}
+        >
+          Refresh Authentication
         </a>
       </div>
     );
