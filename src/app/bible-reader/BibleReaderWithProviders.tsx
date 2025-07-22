@@ -1,6 +1,5 @@
 'use client';
 
-import { ThemeProvider } from '@/context/ThemeContext';
 import { PasswordProvider } from '@/context/PasswordContext';
 import { SessionProvider } from '@/components/SessionProvider';
 import BibleReaderClient from './BibleReaderClient';
@@ -39,11 +38,9 @@ function BibleReaderContent() {
   // Only render the client component if authenticated
   if (isAuthenticated) {
     return (
-      <ThemeProvider>
-        <PasswordProvider>
-          <BibleReaderClient />
-        </PasswordProvider>
-      </ThemeProvider>
+      <PasswordProvider>
+        <BibleReaderClient />
+      </PasswordProvider>
     );
   }
   

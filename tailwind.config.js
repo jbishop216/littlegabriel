@@ -54,6 +54,12 @@ module.exports = {
           '"Segoe UI Symbol"',
           '"Noto Color Emoji"',
         ],
+        georgia: [
+          'Georgia',
+          'Times',
+          '"Times New Roman"',
+          'serif',
+        ],
       },
       boxShadow: {
         'soft-sm': '0 2px 4px 0 rgba(0, 0, 0, 0.05)',

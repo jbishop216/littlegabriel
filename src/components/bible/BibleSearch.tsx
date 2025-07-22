@@ -164,7 +164,7 @@ export default function BibleSearch({ bibleId, onVerseSelect }: BibleSearchProps
                     className="block w-full text-left"
                   >
                     <p className="font-bold text-blue-700">{result.reference}</p>
-                    <p className="mt-1 text-gray-700">{result.text}</p>
+                    <p className="mt-1 text-gray-700 font-georgia">{result.text}</p>
                   </motion.button>
                 </motion.li>
               ))}

@@ -96,7 +96,7 @@ export default function MessageBubble({
         ></div>
 
         {/* Message content with typing effect */}
-        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-snug break-words w-full`}>
+        <div className={`${compact ? 'text-xs' : 'text-[15px]'} leading-snug break-words w-full font-georgia`}>
           {/* Special handling for the typing indicator ("...") - iMessage style */}
           {message === "..." ? (
             <div className="flex items-center space-x-2 py-2 justify-center">

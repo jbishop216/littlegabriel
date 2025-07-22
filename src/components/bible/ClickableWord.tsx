@@ -27,8 +27,8 @@ export default function ClickableWord({ word, onClick }: ClickableWordProps) {
       className={`
         inline px-0 mx-0 rounded cursor-pointer transition-all
         ${hasEntry 
-          ? 'text-blue-700 hover:bg-blue-100 hover:text-blue-900' 
-          : 'text-gray-700 hover:bg-gray-200'}
+          ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-900 dark:hover:text-blue-100' 
+          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}
         ${isKeyTheologicalTerm 
           ? 'font-semibold' 
           : ''

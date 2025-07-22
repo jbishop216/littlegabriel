@@ -265,13 +265,13 @@ export default function ChapterContent({
       )}
       
       <motion.div 
-        className="space-y-3 text-gray-800"
+        className="space-y-3 text-gray-900 dark:text-gray-100"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         {/* Always use the manual rendering approach since the verse parsing isn't reliable */}
-        <div className="scripture-text text-base leading-relaxed text-justify tracking-tight">
+        <div className="scripture-text text-base leading-relaxed text-justify tracking-tight font-georgia text-gray-900 dark:text-gray-100">
           {(() => {
             // This is a direct text-based approach to make every word clickable
             // without relying on the parsing logic

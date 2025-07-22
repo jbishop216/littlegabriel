@@ -5,6 +5,7 @@ import { JWT } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import AppleProvider from "next-auth/providers/apple";
 import bcrypt from "bcryptjs";
 
 // Ensure NEXTAUTH_SECRET is defined
@@ -23,11 +24,12 @@ if (isBuildTime) {
   console.log('Build-time detected, using safe dummy NEXTAUTH_URL');
   process.env.NEXTAUTH_URL = "https://example.com";
 } else {
-  // For development, always use port 3000 to match Google OAuth configuration
-  if (process.env.NODE_ENV === "development") {
-    // Force port 3000 for Google OAuth redirect URI
-    process.env.NEXTAUTH_URL = "http://localhost:3000";
-    console.log('Forced development NEXTAUTH_URL to port 3000:', process.env.NEXTAUTH_URL);
+  // For development, only set NEXTAUTH_URL if not already defined
+  if (process.env.NODE_ENV === "development" && !process.env.NEXTAUTH_URL) {
+    // Use PORT environment variable or default to 3000
+    const port = process.env.PORT || '3000';
+    process.env.NEXTAUTH_URL = `http://localhost:${port}`;
+    console.log('Set development NEXTAUTH_URL to:', process.env.NEXTAUTH_URL);
   } else if (!process.env.NEXTAUTH_URL) {
     // Fallback for production if somehow not set
     console.warn('NEXTAUTH_URL not set in production, using fallback');
@@ -102,6 +104,24 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+    AppleProvider({
+      clientId: process.env.APPLE_CLIENT_ID || '',
+      clientSecret: {
+        appleId: process.env.APPLE_CLIENT_ID || '',
+        teamId: process.env.APPLE_TEAM_ID || '',
+        privateKey: process.env.APPLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+        keyId: process.env.APPLE_KEY_ID || '',
+      } as any, // Type assertion for Apple's unique client secret format
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: null, // Apple doesn't provide profile images
+          role: "user", // Default role for new users
+        };
+      },
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -164,8 +184,8 @@ export const authOptions: NextAuthOptions = {
       return `${baseUrl}/chat`;
     },
     async signIn({ user, account, profile, email, credentials }) {
-      // For Google sign-in, check if user exists and link accounts
-      if (account?.provider === 'google' && profile) {
+      // For OAuth providers (Google, Apple), check if user exists and link accounts
+      if ((account?.provider === 'google' || account?.provider === 'apple') && profile) {
         // Cast profile to any to access Google-specific fields
         const googleProfile = profile as any;
         try {
@@ -174,7 +194,7 @@ export const authOptions: NextAuthOptions = {
           const emailLowerCase = googleProfile.email.toLowerCase();
           
           // Log the authentication attempt for debugging
-          console.log(`Google auth attempt for email: ${emailLowerCase}`);
+          console.log(`${account.provider} auth attempt for email: ${emailLowerCase}`);
           
           const existingUser = await prisma.user.findFirst({
             where: {
@@ -188,21 +208,21 @@ export const authOptions: NextAuthOptions = {
           });
           
           if (existingUser) {
-            console.log('Existing user found for Google sign-in:', existingUser.email);
+            console.log(`Existing user found for ${account.provider} sign-in:`, existingUser.email);
             
-            // Check if this Google account is already linked to the user
+            // Check if this OAuth account is already linked to the user
             const linkedAccount = existingUser.accounts.find(
-              (acc) => acc.provider === 'google' && acc.providerAccountId === googleProfile.sub
+              (acc) => acc.provider === account.provider && acc.providerAccountId === googleProfile.sub
             );
             
             if (!linkedAccount) {
-              // Link the Google account to the existing user
-              console.log('Linking Google account to existing user');
+              // Link the OAuth account to the existing user
+              console.log(`Linking ${account.provider} account to existing user`);
               await prisma.account.create({
                 data: {
                   userId: existingUser.id,
                   type: 'oauth',
-                  provider: 'google',
+                  provider: account.provider,
                   providerAccountId: googleProfile.sub,
                   access_token: account.access_token,
                   expires_at: account.expires_at,
@@ -217,19 +237,19 @@ export const authOptions: NextAuthOptions = {
             return true;
           } else {
             // Create a new user if one doesn't exist
-            console.log('Creating new user from Google sign-in');
+            console.log(`Creating new user from ${account.provider} sign-in`);
             const newUser = await prisma.user.create({
               data: {
-                name: googleProfile.name || 'Google User',
+                name: googleProfile.name || `${account.provider} User`,
                 email: emailLowerCase,
                 role: 'user', // Default role
               },
             });
-            console.log('Created new user from Google sign-in:', newUser.email);
+            console.log(`Created new user from ${account.provider} sign-in:`, newUser.email);
             return true;
           }
         } catch (error) {
-          console.error('Error in Google sign-in:', error);
+          console.error(`Error in ${account.provider} sign-in:`, error);
           return false;
         }
       }
@@ -248,6 +268,7 @@ export const authOptions: NextAuthOptions = {
         if (account?.provider === 'google' && (profile as any)?.picture) {
           token.picture = (profile as any).picture;
         }
+        // Apple doesn't provide profile pictures, so we don't add one for Apple sign-in
       }
       return token;
     },

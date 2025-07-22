@@ -344,15 +344,6 @@ export default function BibleChat({ bibleId, chapterId, className = '' }: BibleC
                 compact={true}
               />
             ))}
-            {isProcessing && (
-              <MessageBubble
-                key="typing-indicator"
-                message="..."
-                isUser={false}
-                typing={false}
-                compact={true}
-              />
-            )}
           </>
         )}
         <div ref={messagesEndRef} />

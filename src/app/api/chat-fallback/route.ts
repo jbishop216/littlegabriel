@@ -152,6 +152,8 @@ export async function POST(req: NextRequest) {
     
     try {
       // Create a system message to instruct the model how to behave
+      // TEMPORARILY DISABLED FOR TESTING - Using OpenAI Assistant instead
+      /*
       const systemMessage = {
         role: 'system',
         content: `You are Gabriel, a compassionate spiritual guide that offers biblical wisdom and spiritual advice.
@@ -159,6 +161,7 @@ export async function POST(req: NextRequest) {
         When appropriate, refer to relevant Bible passages to support your guidance. You should be non-judgmental and respectful of diverse faith backgrounds.
         Be concise but thorough, focusing on being helpful rather than preachy.`
       };
+      */
       
       // Create a properly typed array of messages for the OpenAI API
       const formattedMessages: Array<{
@@ -166,11 +169,13 @@ export async function POST(req: NextRequest) {
         content: string;
       }> = [];
       
-      // Add the system message first
+      // Add the system message first - TEMPORARILY DISABLED
+      /*
       formattedMessages.push({
         role: 'system',
         content: systemMessage.content
       });
+      */
       
       // Add user messages, keeping only the last 10 to avoid token limits
       for (const msg of messages.slice(-10)) {

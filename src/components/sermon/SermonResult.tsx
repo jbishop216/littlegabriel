@@ -97,7 +97,7 @@ export default function SermonResult({ sermonData, onReset }: SermonResultProps)
                 }`}
               >
                 <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">{sermonData.introduction}</p>
+                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 font-georgia">{sermonData.introduction}</p>
                 </div>
               </div>
             </div>
@@ -133,7 +133,7 @@ export default function SermonResult({ sermonData, onReset }: SermonResultProps)
                     }`}
                   >
                     <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-                      <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">{point.content || 'No content available for this point.'}</p>
+                      <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 font-georgia">{point.content || 'No content available for this point.'}</p>
                     </div>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export default function SermonResult({ sermonData, onReset }: SermonResultProps)
                   }`}
                 >
                   <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-                    <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">{sermonData.conclusion}</p>
+                    <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 font-georgia">{sermonData.conclusion}</p>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function SermonResult({ sermonData, onReset }: SermonResultProps)
                   <div className="border-t border-gray-200 p-4 dark:border-gray-700">
                     <ul className="list-inside list-disc space-y-2">
                       {sermonData.illustrations.map((illustration, index) => (
-                        <li key={index} className="text-gray-700 dark:text-gray-300">
+                        <li key={index} className="text-gray-700 dark:text-gray-300 font-georgia">
                           {illustration}
                         </li>
                       ))}

@@ -9,6 +9,8 @@ export type Message = {
 };
 
 // System prompt for Gabriel
+// TEMPORARILY DISABLED FOR TESTING - Using OpenAI Assistant instead
+/*
 const SYSTEM_PROMPT = `You are Gabriel, a friendly and knowledgeable Christian AI assistant. 
 You provide biblically sound advice and insights based on scripture (ESV version).
 You're here to help with questions about faith, provide biblical context, and offer spiritual guidance.
@@ -16,6 +18,7 @@ Always respond in a conversational, warm tone while maintaining scholarly accura
 Format your responses as well-structured paragraphs, not bullet points or lists.
 When referencing scripture, integrate it naturally into your paragraphs.
 You should encourage users to connect with a local church for deeper support and community.`;
+*/
 
 /**
  * Generates a chat completion using the OpenAI API
@@ -35,9 +38,10 @@ export async function generateChatCompletion(messages: Message[], userEmail?: st
     }
     
     // Add the system prompt as the first message if not already present
+    // TEMPORARILY DISABLED - Testing without system prompt
     const chatMessages = messages.some(m => m.role === 'system')
       ? messages
-      : [{ role: 'system', content: SYSTEM_PROMPT }, ...messages];
+      : [/* { role: 'system', content: SYSTEM_PROMPT }, */ ...messages];
     
     console.log('Chat Completions: Sending request to OpenAI');
     

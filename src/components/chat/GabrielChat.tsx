@@ -122,8 +122,8 @@ export default function GabrielChat() {
         });
         
         try {
-          // Use the direct chat API that preserves conversation history
-          response = await fetch('/api/chat-direct', {
+          // Use the OpenAI Assistant API instead of system prompts
+          response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -274,13 +274,13 @@ export default function GabrielChat() {
                 onClick={() => handleSuggestionClick("How can I strengthen my faith during difficult times?")}
                 className="rounded-lg border border-gray-200 bg-white p-3 text-left transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-indigo-800 dark:hover:bg-gray-700/60"
               >
-                <p className="font-medium text-gray-700 dark:text-gray-300">How can I strengthen my faith during difficult times?</p>
+                <p className="font-medium text-gray-700 dark:text-gray-300 font-georgia">How can I strengthen my faith during difficult times?</p>
               </button>
               <button 
                 onClick={() => handleSuggestionClick("What does the Bible teach about forgiveness?")}
                 className="rounded-lg border border-gray-200 bg-white p-3 text-left transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-indigo-800 dark:hover:bg-gray-700/60"
               >
-                <p className="font-medium text-gray-700 dark:text-gray-300">What does the Bible teach about forgiveness?</p>
+                <p className="font-medium text-gray-700 dark:text-gray-300 font-georgia">What does the Bible teach about forgiveness?</p>
               </button>
             </div>
           </div>
